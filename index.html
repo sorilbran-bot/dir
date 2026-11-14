@@ -1,119 +1,226 @@
----
-import Base from '../layouts/Base.astro';
-import RecordCard from '../components/RecordCard.astro';
-import StartNote from '../components/StartNote.astro';
-import { SITE, TYPES, TYPE_KEYS, PILOT_TYPES } from '../site.config';
-import { loadAll, counted, quarterOf } from '../lib/records';
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Detroit Innovation Record: Detroit&#39;s innovation, on the record</title><meta name="description" content="A free public archive of dated, sourced milestones from Detroit's founder and business ecosystem."><link rel="canonical" href="https://detroitinnovationrecord.com/"><meta property="og:title" content="Detroit Innovation Record: Detroit's innovation, on the record"><meta property="og:description" content="A free public archive of dated, sourced milestones from Detroit's founder and business ecosystem."><meta property="og:type" content="website"><meta property="og:url" content="https://detroitinnovationrecord.com/"><link rel="alternate" type="application/json" href="/records.json" title="All records (JSON)"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap"><style>
+/* Detroit Innovation Record — online-magazine feel. Dark blue + orange; yellow is reserved for documentation status. */
+:root {
+  --bg: #F5F5F3; --surface: #FFFFFF; --ink: #1D1B1B; --muted: #4A4D55; --line: #DEDFE3;
+  --blue: #1A3470; --blue-ink: #FFFFFF; --blue-soft: #C9D2EA; --link: #1A3470;
+  --orange: #F07A1A; --orange-ink: #A84A06; --yellow: #FDC32A; --on-yellow: #1D1B1B; --band: #EAEBEF;
+  --display: 'Bricolage Grotesque', 'Arial Narrow', system-ui, sans-serif;
+  --body: 'Instrument Sans', 'Helvetica Neue', Arial, sans-serif;
+  --mono: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12151D; --surface: #1A1E29; --ink: #EEEFF2; --muted: #A9AEBB; --line: #2C3240;
+    --link: #9DB4F0; --orange-ink: #F5A15C; --band: #171B25; color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.55; }
+a { color: var(--link); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; border-radius: 4px; }
+h1, h2, h3 { font-family: var(--display); letter-spacing: -0.025em; line-height: 1.08; text-wrap: balance; margin: 0; }
+p { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: -999px; top: 8px; background: var(--yellow); color: var(--on-yellow); padding: 8px 12px; border-radius: 6px; z-index: 10; }
+.skip:focus { left: 8px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; }
+.wrap.narrow { max-width: 820px; }
+.label { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.label.on-blue { color: var(--blue-soft); }
+.mono { font-family: var(--mono); font-size: 0.86em; }
+.fine { font-size: 15px; color: var(--muted); }
 
-const { recs, orgs } = await loadAll();
-const live = counted(recs);
-const latest = live.slice(0, 6);
-const countOf = (t: string) => live.filter((r) => r.type === t).length;
-const otherTypes = TYPE_KEYS.filter((t) => !(PILOT_TYPES as readonly string[]).includes(t));
-const now = new Date();
-const year = now.getUTCFullYear();
-const orgsWithRecords = orgs
-  .filter((o) => live.some((r) => r.counterparty?.id === o.id))
-  .sort((a, b) => a.data.name.localeCompare(b.data.name));
-const tallyData = live.map((r) => [r.iso, r.type]);
-const WORDS: Record<string, [string, string]> = { launch: ['launch', 'launches'], cohort: ['cohort', 'cohorts'], funding: ['funding record', 'funding records'] };
-const word = (t: string, n: number) => WORDS[t][n === 1 ? 0 : 1];
-const pilotLabels = WORDS;
+/* Masthead */
+.mast { background: var(--blue); color: var(--blue-ink); border-bottom: 1px solid rgba(255,255,255,.12); }
+.mast .wrap { padding-block: 16px; display: flex; flex-wrap: wrap; gap: 10px 24px; justify-content: space-between; align-items: center; }
+.brand { display: flex; align-items: baseline; gap: 10px; color: var(--blue-ink); text-decoration: none; }
+.brand b { font-family: var(--display); font-weight: 800; font-size: 28px; letter-spacing: -0.03em; }
+.brand span { font-size: 14px; color: var(--blue-soft); }
+.mast nav { display: flex; flex-wrap: wrap; gap: 2px 20px; font-size: 15px; font-weight: 500; }
+.mast nav a { color: var(--blue-ink); text-decoration: none; padding-block: 8px; border-bottom: 2px solid transparent; }
+.mast nav a:hover, .mast nav a[aria-current] { border-bottom-color: var(--orange); }
 
-const jsonld = {
-  '@context': 'https://schema.org',
-  '@type': 'Dataset',
-  name: SITE.name,
-  description: SITE.description,
-  url: SITE.url,
-  temporalCoverage: `${SITE.recordStart}/..`,
-  spatialCoverage: { '@type': 'Place', name: 'Detroit, Michigan' },
-  isAccessibleForFree: true,
-  publisher: { '@type': 'Organization', name: SITE.publisher, url: SITE.publisherUrl, founder: { '@type': 'Person', name: SITE.founder } },
-  distribution: { '@type': 'DataDownload', encodingFormat: 'application/json', contentUrl: `${SITE.url}/records.json` },
-};
----
-<Base jsonld={jsonld}>
-  <section class="hero">
-    <div class="wrap hero-inner">
-      <h1>Detroit’s innovation, <em>on the record.</em></h1>
-      <p class="lede">A public, machine-readable record of what Detroit founders build, so the innovation never gets too far from the hands that built it.</p>
-      <form class="search" action="/records/" method="get" role="search">
-        <label for="q" class="sr">Search records</label>
-        <input id="q" name="q" type="search" placeholder="Search a business, founder or organization" autocomplete="off" />
-        <button type="submit">Search</button>
-      </form>
-      <div class="chips" aria-label="Browse by time">
-        <span class="label on-blue">Browse by time</span>
-        <a class="chip-link" href="/records/?period=30d">Last 30 days</a>
-        <a class="chip-link" href="/records/?period=this-q">This quarter</a>
-        <a class="chip-link" href="/records/?period=last-q">Last quarter</a>
-        <a class="chip-link" href={`/records/?period=${year}`}>{year}</a>
-      </div>
-    </div>
-  </section>
+/* Hero (home) */
+.hero { background: var(--blue); color: var(--blue-ink); }
+.hero-inner { padding-block: 40px 52px; display: flex; flex-direction: column; gap: 20px; }
+.hero h1 { font-size: clamp(42px, 7vw, 80px); font-weight: 800; max-width: 14ch; }
+.hero h1 em { font-style: normal; color: var(--yellow); }
+.lede { font-size: 19px; color: var(--blue-soft); max-width: 40em; }
+.search { display: flex; gap: 8px; max-width: 640px; margin-top: 6px; }
+.search input { flex: 1; min-width: 0; font: inherit; font-size: 17px; padding: 13px 16px; border-radius: 10px; border: 0; background: #fff; color: #1D1B1B; }
+.search button { font: inherit; font-weight: 700; background: var(--orange); color: #1D1B1B; border: 0; border-radius: 10px; padding: 0 20px; cursor: pointer; min-height: 48px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chips .label { margin-right: 6px; }
+.chip-link { text-decoration: none; font-weight: 600; font-size: 15px; padding: 8px 14px; border-radius: 999px; border: 1.5px solid var(--blue-soft); color: var(--blue-ink); }
+.chip-link:hover { background: var(--blue-ink); color: var(--blue); }
+.chips.light .chip-link { border-color: var(--line); color: var(--link); background: var(--surface); }
+.chips.light .chip-link:hover { border-color: var(--link); }
+.chips.light { margin-bottom: 20px; }
 
-  <section class="block">
-    <div class="wrap">
-      <div class="head-row"><h2>Browse by type</h2><a href="/records/">All records →</a></div>
-      <div class="tiles">
-        {PILOT_TYPES.map((t) => (
-          <a class={`tile tile-${t}`} href={`/records/${t}/`}>
-            <span class="tile-n">{countOf(t)}</span>
-            <span class="tile-name">{TYPES[t].plural}</span>
-            <span class="tile-blurb">{TYPES[t].blurb}</span>
-          </a>
-        ))}
-      </div>
-      <p class="other-types"><span class="label">Also on the record</span>
-        {otherTypes.map((t) => <a href={`/records/${t}/`}>{TYPES[t].plural} <span class="mono">({countOf(t)})</span></a>)}
-      </p>
-    </div>
-  </section>
+/* Page heads (inner pages) */
+.pagehead { background: var(--blue); color: var(--blue-ink); }
+.pagehead .wrap { padding-block: 32px 40px; display: flex; flex-direction: column; gap: 12px; }
+.pagehead h1 { font-size: clamp(34px, 5vw, 56px); font-weight: 800; }
+.crumbs { font-size: 14px; color: var(--blue-soft); }
+.crumbs a, .on-blue-link { color: var(--blue-ink); }
 
-  <section class="block">
-    <div class="wrap">
-      <div class="head-row"><h2>Latest on the record</h2><a href="/records/">See everything →</a></div>
-      {latest.length ? (
-        <div class="cards">{latest.map((r) => <RecordCard r={r} />)}</div>
-      ) : (
-        <p class="empty">The first records are being verified now. Check back soon.</p>
-      )}
-      <p class="fine">Newest first, by the date it happened. Nothing is featured or ranked.</p>
-    </div>
-  </section>
+/* Sections */
+section.block .wrap { padding-block: 56px; display: flex; flex-direction: column; gap: 24px; }
+section.block + section.block .wrap { border-top: 1px solid var(--line); }
+section.band { background: var(--band); }
+section.band + section.block .wrap { border-top: 0; }
+.head { display: flex; flex-direction: column; gap: 12px; max-width: 46em; }
+.head h2 { font-size: clamp(30px, 4.5vw, 46px); font-weight: 800; }
+.head p { font-size: 19px; color: var(--muted); }
+.head-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 20px; }
+.head-row h2 { font-size: clamp(28px, 3.8vw, 38px); font-weight: 800; }
+.head-row a { font-weight: 600; }
+h2.sec { font-size: 26px; font-weight: 700; margin-top: 36px; margin-bottom: 4px; }
 
-  <section class="block band">
-    <div class="wrap tally-wrap">
-      <div>
-        <span class="label">This quarter so far</span>
-        <h2 id="tally-q">Q{quarterOf(now)} {year}</h2>
-      </div>
-      <ul class="tally" id="tally" data-records={JSON.stringify(tallyData)} data-labels={JSON.stringify(pilotLabels)}>
-        {PILOT_TYPES.map((t) => { const n = live.filter((r) => r.type === t && r.year === year && r.quarter === quarterOf(now)).length; return <li><b>{n}</b> {word(t, n)}</li>; })}
-      </ul>
-      <a class="btn" href="/records/?period=this-q">See this quarter</a>
-    </div>
-  </section>
+/* Type tiles */
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.tile { display: flex; flex-direction: column; gap: 6px; padding: 24px; border-radius: 14px; text-decoration: none; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-top: 6px solid var(--blue); transition: transform .15s; }
+.tile:hover { transform: translateY(-2px); border-color: var(--link); }
+.tile-cohort { border-top-color: var(--orange); }
+.tile-funding { border-top-color: var(--ink); }
+.tile-n { font-family: var(--display); font-weight: 800; font-size: 56px; line-height: 1; letter-spacing: -0.04em; }
+.tile-name { font-family: var(--display); font-weight: 700; font-size: 24px; }
+.tile-blurb { color: var(--muted); font-size: 15px; }
+.other-types { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; font-size: 15px; }
+.other-types .label { margin-right: 4px; }
 
-  {orgsWithRecords.length > 0 && (
-    <section class="block">
-      <div class="wrap">
-        <div class="head-row"><h2>Browse by organization</h2><a href="/organizations/">All organizations →</a></div>
-        <p class="fine">Programs, funders and hosts named in at least one record, A to Z.</p>
-        <ul class="orglist">
-          {orgsWithRecords.map((o) => <li><a href={`/org/${o.id}/`}>{o.data.name}</a></li>)}
-        </ul>
-      </div>
-    </section>
-  )}
+/* Record cards */
+.cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.rcard { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; display: flex; flex-direction: column; gap: 10px; }
+.rcard-top { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; font-size: 14px; color: var(--muted); }
+.rcard-title { font-family: var(--display); font-size: 21px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.2; }
+.rcard-title a { color: var(--ink); text-decoration: none; }
+.rcard-title a:hover { text-decoration: underline; }
+.rcard-meta { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; font-size: 14px; color: var(--muted); margin-top: auto; }
+.tag { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: var(--band); color: var(--ink); white-space: nowrap; }
+.tag.t-launch { background: var(--blue); color: #fff; }
+.tag.t-funding { background: var(--ink); color: var(--bg); }
+.tag.t-cohort { background: var(--orange); color: #1D1B1B; }
+.tag.sm { font-size: 10px; padding: 2px 6px; }
+.earlier-tag, .example-tag { font-family: var(--mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; border: 1px dashed var(--muted); color: var(--muted); white-space: nowrap; }
+.example-tag { border-style: solid; border-color: var(--orange); color: var(--orange-ink); }
+.earlier-tag.sm { font-size: 10px; }
+.pill { display: inline-block; font-weight: 700; font-size: 14px; padding: 6px 13px; border-radius: 999px; white-space: nowrap; }
+.pill.sm { font-size: 12px; padding: 3px 10px; }
+.pill.both { background: var(--yellow); color: var(--on-yellow); }
+.pill.one { border: 1.5px solid var(--orange); color: var(--orange-ink); font-weight: 600; }
+.pill.launch { background: var(--blue); color: #fff; box-shadow: inset 0 0 0 1.5px var(--blue-soft); }
+.empty { padding: 28px; border: 1.5px dashed var(--line); border-radius: 12px; color: var(--muted); text-align: center; }
 
-  <section class="block">
-    <div class="wrap"><StartNote /></div>
-  </section>
-</Base>
+/* Tally */
+.tally-wrap { display: grid !important; grid-template-columns: auto 1fr auto; align-items: center; gap: 24px 40px !important; }
+.tally-wrap h2 { font-size: 36px; font-weight: 800; }
+.tally { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 32px; font-size: 18px; }
+.tally b { font-family: var(--display); font-size: 40px; font-weight: 800; margin-right: 6px; letter-spacing: -.03em; }
+.btn { display: inline-block; text-decoration: none; font-weight: 700; background: var(--blue); color: #fff; padding: 12px 18px; border-radius: 10px; white-space: nowrap; }
 
-<script is:inline>
+.orglist { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+.orglist a { display: inline-block; padding: 8px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); text-decoration: none; font-weight: 600; }
+.orgtable { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--ink); }
+.orgtable li { display: flex; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 18px; }
+.startnote { font-size: 15px; color: var(--muted); border-left: 4px solid var(--yellow); padding: 4px 0 4px 14px; max-width: 48em; }
+.startnote b { color: var(--ink); }
+
+/* Browse filters */
+.filters { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-end; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+.filters label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.filters label.grow { flex: 1 1 220px; }
+.filters select, .filters input { font: inherit; font-size: 16px; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); min-height: 44px; }
+.linkbtn { font: inherit; font-size: 15px; background: none; border: 0; color: var(--link); text-decoration: underline; cursor: pointer; min-height: 44px; }
+.count { font-family: var(--display); font-size: 22px; font-weight: 700; }
+.count-sub { font-family: var(--body); font-size: 16px; font-weight: 500; color: var(--muted); }
+.period-note { background: var(--band); border-left: 4px solid var(--orange); padding: 10px 14px; font-size: 15px; }
+.permalinks { display: flex; flex-direction: column; gap: 8px; }
+.permalinks ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 20px; }
+
+/* Record page */
+.rec-tags { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.pagehead .earlier-tag { color: var(--blue-soft); border-color: var(--blue-soft); }
+.pagehead .example-tag { color: var(--yellow); border-color: var(--yellow); }
+.rec-title { font-size: clamp(30px, 4.6vw, 48px) !important; }
+.rec-date { color: var(--blue-soft); font-size: 17px; }
+.rec-body { padding-block: 40px 64px; display: flex; flex-direction: column; gap: 12px; }
+.blurb { font-size: 20px; line-height: 1.6; }
+.blurb p + p { margin-top: 14px; }
+.notice { background: var(--band); border-left: 4px solid var(--orange); padding: 12px 16px; font-size: 16px; }
+.facts { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 2px solid var(--ink); }
+.facts > div { padding: 12px 0; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 2px; padding-right: 16px; }
+.facts dt { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin: 0; font-weight: 500; }
+.facts.compact { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.sources { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.src { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; border-left: 5px solid var(--muted); }
+.src .label { flex-basis: 100%; }
+.src-org { border-left-color: var(--blue); }
+.src-founder { border-left-color: var(--orange); }
+.src-public-trace { border-left-color: var(--yellow); }
+.arch { font-size: 14px; color: var(--muted); }
+.lineage { list-style: none; margin: 0; padding: 0 0 0 18px; border-left: 3px solid var(--line); display: flex; flex-direction: column; gap: 14px; }
+.lineage li { position: relative; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+.lineage li > a { flex-basis: 100%; }
+.lineage li::before { content: ""; position: absolute; left: -26px; top: 7px; width: 13px; height: 13px; border-radius: 50%; background: var(--orange); border: 3px solid var(--bg); }
+.lineage time { font-family: var(--mono); font-size: 13px; color: var(--muted); flex-basis: 100%; }
+.lineage.big a { font-family: var(--display); font-size: 20px; font-weight: 700; letter-spacing: -.01em; flex-basis: 100%; }
+.corrections { margin: 0; padding-left: 20px; }
+.cite { background: var(--surface); border: 1px solid var(--line); padding: 14px 16px; border-radius: 8px; overflow-wrap: anywhere; user-select: all; }
+
+/* About page pieces (from the original front door) */
+.three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.three > div { display: flex; flex-direction: column; gap: 8px; }
+.three h3 { font-size: 22px; font-weight: 700; }
+.three p { color: var(--muted); }
+.labels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.lab { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; gap: 12px; }
+.lab .pill { align-self: flex-start; }
+.lab p { color: var(--muted); font-size: 16px; }
+.types { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--ink); }
+.types li { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr) minmax(0, 1fr); gap: 8px 24px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.types b { font-family: var(--display); font-size: 20px; font-weight: 700; letter-spacing: -0.015em; }
+.types .no { color: var(--muted); font-size: 15px; }
+.types .no::before { content: "Not: "; font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; }
+.rules { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 40px; }
+.rule { display: flex; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.rule svg { flex: 0 0 22px; margin-top: 3px; color: var(--orange); }
+.rule h3 { font-family: var(--body); font-size: 17px; font-weight: 700; letter-spacing: 0; line-height: 1.4; }
+.rule p { color: var(--muted); font-size: 16px; }
+.split { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 28px; display: flex; flex-direction: column; gap: 14px; }
+.card h3 { font-size: 26px; font-weight: 700; }
+.card ol, .card ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.card .note { font-size: 15px; color: var(--muted); padding-top: 12px; border-top: 1px solid var(--line); }
+.contact { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.addr { font-family: var(--mono); font-size: 18px; background: var(--surface); border: 1px solid var(--line); padding: 12px 16px; border-radius: 8px; overflow-wrap: anywhere; text-decoration: none; }
+.copy { font: inherit; font-weight: 600; font-size: 15px; background: var(--blue); color: #fff; border: 0; border-radius: 8px; padding: 13px 18px; min-height: 44px; cursor: pointer; }
+#copy-status { font-size: 14px; color: var(--muted); }
+
+footer { background: var(--blue); color: var(--blue-soft); }
+footer .wrap { padding-block: 32px; display: flex; flex-wrap: wrap; gap: 12px 32px; justify-content: space-between; font-size: 15px; }
+footer a { color: var(--blue-ink); }
+.foot-links { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+
+@media (max-width: 860px) {
+  .tiles, .cards, .three, .labels, .split, .rules { grid-template-columns: minmax(0, 1fr); }
+  .types li { grid-template-columns: minmax(0, 1fr); }
+  .tally-wrap { grid-template-columns: minmax(0, 1fr); }
+  .facts, .facts.compact { grid-template-columns: minmax(0, 1fr); }
+  section.block .wrap { padding-block: 44px; }
+}
+@media (max-width: 520px) {
+  .search { flex-direction: column; }
+  .tile-n { font-size: 44px; }
+}
+.pagehead .pill.one { background: #fff; border-color: #fff; color: #A84A06; }
+
+</style><script type="application/ld+json">{"@context":"https://schema.org","@type":"Dataset","name":"Detroit Innovation Record","description":"A free public archive of dated, sourced milestones from Detroit's founder and business ecosystem.","url":"https://detroitinnovationrecord.com","temporalCoverage":"2026-11-01/..","spatialCoverage":{"@type":"Place","name":"Detroit, Michigan"},"isAccessibleForFree":true,"publisher":{"@type":"Organization","name":"Detroit Media and Innovation Lab","url":"https://detroitmediainnovation.com","founder":{"@type":"Person","name":"Sorilbran Stone"}},"distribution":{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://detroitinnovationrecord.com/records.json"}}</script></head> <body> <a class="skip" href="#main">Skip to content</a> <header class="mast"> <div class="wrap"> <a class="brand" href="/"><b>DIR</b><span>Detroit Innovation Record</span></a> <nav aria-label="Main"> <a href="/records/">Browse records</a> <a href="/organizations/">Organizations</a> <a href="/about/">How it works</a> <a href="/about/#contact">Contact</a> </nav> </div> </header> <main id="main"> <section class="hero"> <div class="wrap hero-inner"> <h1>Detroit’s innovation, <em>on the record.</em></h1> <p class="lede">A public, machine-readable record of what Detroit founders build, so the innovation never gets too far from the hands that built it.</p> <form class="search" action="/records/" method="get" role="search"> <label for="q" class="sr">Search records</label> <input id="q" name="q" type="search" placeholder="Search a business, founder or organization" autocomplete="off"> <button type="submit">Search</button> </form> <div class="chips" aria-label="Browse by time"> <span class="label on-blue">Browse by time</span> <a class="chip-link" href="/records/?period=30d">Last 30 days</a> <a class="chip-link" href="/records/?period=this-q">This quarter</a> <a class="chip-link" href="/records/?period=last-q">Last quarter</a> <a class="chip-link" href="/records/?period=2026">2026</a> </div> </div> </section> <section class="block"> <div class="wrap"> <div class="head-row"><h2>Browse by type</h2><a href="/records/">All records →</a></div> <div class="tiles"> <a class="tile tile-launch" href="/records/launch/"> <span class="tile-n">0</span> <span class="tile-name">Launches</span> <span class="tile-blurb">Products, services and locations that went to market</span> </a><a class="tile tile-cohort" href="/records/cohort/"> <span class="tile-n">0</span> <span class="tile-name">Cohorts and programs</span> <span class="tile-blurb">Accepted into an accelerator, cohort or fellowship</span> </a><a class="tile tile-funding" href="/records/funding/"> <span class="tile-n">0</span> <span class="tile-name">Funding</span> <span class="tile-blurb">Grants, investments, loans and prizes from a named source</span> </a> </div> <p class="other-types"><span class="label">Also on the record</span> <a href="/records/selected-participation/">Selected participation <span class="mono">(0)</span></a><a href="/records/award/">Awards and recognition <span class="mono">(0)</span></a><a href="/records/partnership/">Partnerships <span class="mono">(0)</span></a><a href="/records/growth/">Growth <span class="mono">(0)</span></a> </p> </div> </section> <section class="block"> <div class="wrap"> <div class="head-row"><h2>Latest on the record</h2><a href="/records/">See everything →</a></div> <p class="empty">The first records are being verified now. Check back soon.</p> <p class="fine">Newest first, by the date it happened. Nothing is featured or ranked.</p> </div> </section> <section class="block band"> <div class="wrap tally-wrap"> <div> <span class="label">This quarter so far</span> <h2 id="tally-q">Q4 2026</h2> </div> <ul class="tally" id="tally" data-records="[]" data-labels="{&#34;launch&#34;:[&#34;launch&#34;,&#34;launches&#34;],&#34;cohort&#34;:[&#34;cohort&#34;,&#34;cohorts&#34;],&#34;funding&#34;:[&#34;funding record&#34;,&#34;funding records&#34;]}"> <li><b>0</b> launches</li><li><b>0</b> cohorts</li><li><b>0</b> funding records</li> </ul> <a class="btn" href="/records/?period=this-q">See this quarter</a> </div> </section> <section class="block"> <div class="wrap"><p class="startnote"><b>The record begins November 1, 2026.</b> Nothing earlier is counted. Older milestones appear only as "Earlier record" when they're part of the story behind a current one.</p></div> </section> </main> <footer> <div class="wrap"> <span>The Detroit Innovation Record is run by the <a href="https://detroitmediainnovation.com"><b>Detroit Media and Innovation Lab</b></a>, founded by Sorilbran Stone.</span> <span class="foot-links"><a href="/about/#rules">Our rules</a><a href="/about/#contacted">If we contacted you</a><a href="/records.json">Data (JSON)</a></span> </div> </footer> </body></html> <script>
 (function () {
   var el = document.getElementById('tally');
   if (!el) return;
