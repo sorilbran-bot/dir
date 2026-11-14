@@ -1,0 +1,146 @@
+---
+import Base from '../../layouts/Base.astro';
+import StartNote from '../../components/StartNote.astro';
+import { render } from 'astro:content';
+import { SITE } from '../../site.config';
+import { loadAll, fmtDate, isoDate, type Rec } from '../../lib/records';
+
+export async function getStaticPaths() {
+  const { recs } = await loadAll();
+  return recs.map((r) => ({ params: { slug: r.slug }, props: { slug: r.slug } }));
+}
+const { recs } = await loadAll();
+const r = recs.find((x) => x.slug === Astro.props.slug) as Rec;
+const d = r.d;
+const { Content } = await render(r.entry);
+const url = new URL(r.url, SITE.url).href;
+
+const bizIds = new Set(r.businesses.map((b) => b.id));
+const lineage = recs
+  .filter((x) => x !== r && x.businesses.some((b) => bizIds.has(b.id)))
+  .sort((a, b) => a.iso.localeCompare(b.iso));
+const pulledBy = d.pulled_in_by ? recs.find((x) => x.d.record_id === d.pulled_in_by) : undefined;
+const ledBackTo = recs.filter((x) => x.d.pulled_in_by === d.record_id);
+
+const SIDE = { org: 'Organization side', founder: 'Founder side', 'public-trace': 'Public trace' } as const;
+const VER = { confirmed: 'Confirmed', pending: 'Waiting to hear back', 'no-reply': 'Did not reply', 'not-applicable': '' } as const;
+const lastChange = d.corrections.length ? d.corrections.map((c) => c.date).sort((a, b) => +b - +a)[0] : d.published;
+
+// Structured data: what happened, between whom, with the sources as citations.
+const bizNode = (b: (typeof r.businesses)[number]) => {
+  const node: Record<string, unknown> = { '@type': 'Organization', name: b.data.name, url: b.data.website, sameAs: new URL(`/business/${b.id}/`, SITE.url).href };
+  const cp = r.counterparty ? { '@type': 'Organization', name: r.counterparty.data.name, url: r.counterparty.data.website } : undefined;
+  if (r.type === 'funding' && cp) node.funder = cp;
+  if (r.type === 'cohort' && cp) node.memberOf = { '@type': 'ProgramMembership', programName: d.program, hostingOrganization: cp };
+  if (b.data.founders.length) node.founder = b.data.founders.map((f) => ({ '@type': 'Person', name: f.name, ...(f.profile_consent && f.profile_url ? { url: f.profile_url } : {}) }));
+  return node;
+};
+const jsonld = {
+  '@context': 'https://schema.org',
+  '@type': 'CreativeWork',
+  '@id': url,
+  url,
+  name: d.title,
+  identifier: d.record_id,
+  genre: r.typeLabel,
+  temporalCoverage: r.iso,
+  datePublished: isoDate(d.published),
+  dateModified: isoDate(lastChange),
+  locationCreated: { '@type': 'Place', name: 'Detroit, Michigan' },
+  about: r.businesses.map(bizNode),
+  ...(r.counterparty ? { mentions: { '@type': 'Organization', name: r.counterparty.data.name, url: r.counterparty.data.website } } : {}),
+  citation: d.sources.map((s) => s.url),
+  isPartOf: { '@type': 'Dataset', name: SITE.name, url: SITE.url },
+  publisher: { '@type': 'Organization', name: SITE.publisher, url: SITE.publisherUrl },
+};
+---
+<Base title={`${d.record_id}: ${d.title}`} description={d.title} jsonld={jsonld}>
+  <article class="record">
+    <header class="pagehead">
+      <div class="wrap narrow">
+        <nav class="crumbs on-blue" aria-label="Breadcrumb"><a href="/records/">Records</a> / <a href={`/records/${r.type}/`}>{r.typeLabel}</a> / {d.record_id}</nav>
+        <div class="rec-tags">
+          <span class={`tag t-${r.type}`}>{r.typeLabel}</span>
+          {r.earlier && <span class="earlier-tag">Earlier record</span>}
+          {d.example && <span class="example-tag">Example · fictional</span>}
+        </div>
+        <h1 class="rec-title">{d.title}</h1>
+        <p class="rec-date">Happened <time datetime={r.iso}>{fmtDate(d.date)}</time></p>
+        <div class="rec-status">
+          <span class={`pill ${r.statusCls}`}>{r.statusLabel}</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="wrap narrow rec-body">
+      {r.earlier && (
+        <aside class="notice">
+          <b>Earlier record.</b> This happened before the record began on {fmtDate(new Date(SITE.recordStart))}, so it isn't counted in any totals or time filters.
+          {pulledBy && <> It's here because it's part of the story behind <a href={pulledBy.url}>{pulledBy.d.record_id}</a>.</>}
+        </aside>
+      )}
+      {d.client_record && (
+        <aside class="notice">
+          <b>Disclosure.</b> This record involves a client of the {SITE.publisher}. An independent reviewer checked it before it published.
+        </aside>
+      )}
+
+      <div class="blurb"><Content /></div>
+
+      <h2 class="sec">The details</h2>
+      <dl class="facts">
+        <div><dt>Date it happened</dt><dd>{fmtDate(d.date)}</dd></div>
+        <div><dt>{r.businesses.length > 1 ? 'Businesses' : 'Business'}</dt><dd>{r.businesses.map((b, i) => <>{i > 0 && ', '}<a href={`/business/${b.id}/`}>{b.data.name}</a></>)}</dd></div>
+        {r.counterparty && <div><dt>Other party</dt><dd><a href={`/org/${r.counterparty.id}/`}>{r.counterparty.data.name}</a></dd></div>}
+        {d.program && <div><dt>Program or event</dt><dd>{d.program}</dd></div>}
+        {r.type === 'funding' && <div><dt>Amount</dt><dd>{d.amount === 'undisclosed' ? 'Not made public' : d.amount}{d.funding_kind && ` (${d.funding_kind})`}</dd></div>}
+        <div><dt>In Detroit</dt><dd>Address checked against {r.businesses.map((b) => ({ 'state-registration': 'state business registration', 'county-dba': 'county DBA filing', 'city-license': 'city business license' })[b.data.detroit_check]).filter((v, i, a) => a.indexOf(v) === i).join(' and ')}</dd></div>
+        <div><dt>Record ID</dt><dd class="mono">{d.record_id}</dd></div>
+        <div><dt>Published</dt><dd>{fmtDate(d.published)}</dd></div>
+      </dl>
+
+      <h2 class="sec">Sources</h2>
+      <p class="fine">DIR is never the only proof. Every record points to what the parties published themselves.</p>
+      <ul class="sources">
+        {d.sources.map((s) => (
+          <li class={`src src-${s.side}`}>
+            <span class="label">{SIDE[s.side]}</span>
+            <a href={s.url} rel="noopener">{s.label}</a>
+            {s.archived && <a class="arch" href={s.archived} rel="noopener">Archived copy</a>}
+          </li>
+        ))}
+      </ul>
+
+      {(VER[d.verification.founder] || VER[d.verification.counterparty]) && (
+        <>
+          <h2 class="sec">Checked with</h2>
+          <dl class="facts compact">
+            {VER[d.verification.founder] && <div><dt>The business</dt><dd>{VER[d.verification.founder]}</dd></div>}
+            {VER[d.verification.counterparty] && <div><dt>The other party</dt><dd>{VER[d.verification.counterparty]}</dd></div>}
+          </dl>
+        </>
+      )}
+
+      {(lineage.length > 0 || ledBackTo.length > 0) && (
+        <>
+          <h2 class="sec">The rest of the story</h2>
+          <p class="fine">Other records for {r.businesses.map((b) => b.data.name).join(' and ')}, oldest first.</p>
+          <ol class="lineage">
+            {lineage.map((x) => (
+              <li><time datetime={x.iso}>{fmtDate(x.d.date)}</time> <span class={`tag sm t-${x.type}`}>{x.typeLabel}</span>{x.earlier && <span class="earlier-tag sm">Earlier record</span>}<a href={x.url}>{x.d.title}</a></li>
+            ))}
+          </ol>
+        </>
+      )}
+
+      <h2 class="sec">Corrections</h2>
+      {d.corrections.length ? (
+        <ul class="corrections">{d.corrections.map((c) => <li><time>{fmtDate(c.date)}</time> {c.note}</li>)}</ul>
+      ) : <p class="fine">None so far. If something here is wrong, <a href="/about/#contact">tell us</a> and we'll fix it and log the change here.</p>}
+
+      <h2 class="sec">Cite this record</h2>
+      <p class="cite mono">{SITE.name}, {d.record_id}, “{d.title}” Published {fmtDate(d.published)}. {url}</p>
+      <StartNote />
+    </div>
+  </article>
+</Base>

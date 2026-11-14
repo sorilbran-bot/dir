@@ -1,0 +1,47 @@
+---
+import Base from '../../layouts/Base.astro';
+import RecordCard from '../../components/RecordCard.astro';
+import StartNote from '../../components/StartNote.astro';
+import { SITE } from '../../site.config';
+import { loadAll } from '../../lib/records';
+
+export async function getStaticPaths() {
+  const { orgs } = await loadAll();
+  return orgs.map((o) => ({ params: { slug: o.id }, props: { id: o.id } }));
+}
+const { recs, orgs } = await loadAll();
+const o = orgs.find((x) => x.id === Astro.props.id)!;
+const list = recs.filter((r) => r.counterparty?.id === o.id && !r.earlier);
+const businesses = [...new Map(list.flatMap((r) => r.businesses).map((b) => [b.id, b])).values()].sort((a, b) => a.data.name.localeCompare(b.data.name));
+const KIND = { funder: 'Funder', program: 'Program', 'event-host': 'Event host', government: 'Government', other: 'Organization' };
+const url = new URL(`/org/${o.id}/`, SITE.url).href;
+const jsonld = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfilePage',
+  url,
+  mainEntity: { '@type': 'Organization', name: o.data.name, url: o.data.website, subjectOf: list.map((r) => new URL(r.url, SITE.url).href) },
+};
+---
+<Base title={o.data.name} description={`${o.data.name}: its documented involvement with Detroit founders and businesses.`} jsonld={jsonld}>
+  <section class="pagehead">
+    <div class="wrap">
+      <span class="label on-blue">{KIND[o.data.kind]}{o.data.example && ' · Example, fictional'}</span>
+      <h1>{o.data.name}</h1>
+      <p class="lede">A sourced history of this organization's involvement with Detroit founders and businesses.</p>
+    </div>
+  </section>
+  <section class="block">
+    <div class="wrap">
+      <p class="count">{list.length} {list.length === 1 ? 'record' : 'records'} · {businesses.length} Detroit {businesses.length === 1 ? 'business' : 'businesses'}
+        {o.data.website && <> · <a href={o.data.website} rel="noopener">Website</a></>}</p>
+      <div class="cards">{list.map((r) => <RecordCard r={r} />)}</div>
+      {businesses.length > 0 && (
+        <>
+          <h2 class="sec">Businesses named with {o.data.name}</h2>
+          <ul class="orglist">{businesses.map((b) => <li><a href={`/business/${b.id}/`}>{b.data.name}</a></li>)}</ul>
+        </>
+      )}
+      <StartNote />
+    </div>
+  </section>
+</Base>

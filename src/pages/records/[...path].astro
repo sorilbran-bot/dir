@@ -1,0 +1,98 @@
+---
+import Base from '../../layouts/Base.astro';
+import RecordCard from '../../components/RecordCard.astro';
+import StartNote from '../../components/StartNote.astro';
+import { SITE, TYPES, TYPE_KEYS, type RecordType } from '../../site.config';
+import { loadAll, counted, qLabel, type Rec } from '../../lib/records';
+
+export async function getStaticPaths() {
+  const { recs } = await loadAll();
+  const live = counted(recs);
+  const paths = new Map<string, { type?: RecordType; year?: number; quarter?: number }>();
+  for (const t of TYPE_KEYS) paths.set(t, { type: t });
+  for (const r of live) {
+    paths.set(`${r.year}`, { year: r.year });
+    paths.set(`${r.year}/q${r.quarter}`, { year: r.year, quarter: r.quarter });
+    paths.set(`${r.type}/${r.year}`, { type: r.type, year: r.year });
+    paths.set(`${r.type}/${r.year}/q${r.quarter}`, { type: r.type, year: r.year, quarter: r.quarter });
+  }
+  return [...paths].map(([path, props]) => ({ params: { path }, props }));
+}
+
+const { type, year, quarter } = Astro.props as { type?: RecordType; year?: number; quarter?: number };
+const { recs } = await loadAll();
+const live = counted(recs);
+const list: Rec[] = live.filter((r) => (!type || r.type === type) && (!year || r.year === year) && (!quarter || r.quarter === quarter));
+
+const periodName = year ? (quarter ? qLabel(year, quarter) : String(year)) : '';
+const typeName = type ? TYPES[type].plural : 'All records';
+const title = [typeName, periodName].filter(Boolean).join(', ');
+
+// Is the period still open?
+let periodEnd: string | null = null;
+if (year) periodEnd = quarter ? new Date(Date.UTC(year, quarter * 3, 0)).toISOString().slice(0, 10) : `${year}-12-31`;
+const today = new Date().toISOString().slice(0, 10);
+const open = periodEnd ? today <= periodEnd : true;
+
+const fundingCount = list.filter((r) => r.type === 'funding').length;
+const fundingPublic = list.filter((r) => r.type === 'funding' && r.d.amount !== 'undisclosed').length;
+
+// Drill-down links
+const subYears = !year ? [...new Set(list.map((r) => r.year))] : [];
+const subQuarters = year && !quarter ? [...new Set(list.map((r) => r.quarter))].sort((a, b) => b - a) : [];
+const base = type ? `/records/${type}` : '/records';
+
+const jsonld = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: `${title} · ${SITE.name}`,
+  url: new URL(Astro.url.pathname, SITE.url).href,
+  isPartOf: { '@type': 'Dataset', name: SITE.name, url: SITE.url },
+  mainEntity: {
+    '@type': 'ItemList',
+    numberOfItems: list.length,
+    itemListElement: list.map((r, i) => ({ '@type': 'ListItem', position: i + 1, url: new URL(r.url, SITE.url).href, name: r.d.title })),
+  },
+};
+---
+<Base title={title} description={`${title}: dated, sourced milestones from Detroit founders and businesses.`} jsonld={jsonld}>
+  <section class="pagehead">
+    <div class="wrap">
+      <nav class="crumbs on-blue" aria-label="Breadcrumb">
+        <a href="/records/">Records</a>
+        {type && <> / <a href={`/records/${type}/`}>{TYPES[type].plural}</a></>}
+        {year && <> / <a href={`${base}/${year}/`}>{year}</a></>}
+        {quarter && <> / Q{quarter}</>}
+      </nav>
+      <h1>{title}</h1>
+      {type && !year && <p class="lede">{TYPES[type].blurb}.</p>}
+      {year && (
+        <p class="lede">{open
+          ? `This period is still open. This page keeps growing until ${periodEnd}.`
+          : 'This period is closed. The list is final unless a correction is logged on a record.'}</p>
+      )}
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <p class="count">
+        {list.length} {list.length === 1 ? 'record' : 'records'}
+        {fundingCount > 0 && <span class="count-sub"> · {fundingCount} funding {fundingCount === 1 ? 'record' : 'records'}, {fundingPublic} with amounts made public</span>}
+      </p>
+
+      {(subYears.length > 0 || subQuarters.length > 0) && (
+        <div class="chips light">
+          <span class="label">Narrow it down</span>
+          {subYears.map((y) => <a class="chip-link" href={`${base}/${y}/`}>{y}</a>)}
+          {subQuarters.map((q) => <a class="chip-link" href={`${base}/${year}/q${q}/`}>{qLabel(year!, q)}</a>)}
+        </div>
+      )}
+
+      {list.length ? <div class="cards">{list.map((r) => <RecordCard r={r} />)}</div>
+        : <p class="empty">Nothing on the record here yet.</p>}
+      <p class="fine"><a href={`/records/?${new URLSearchParams({ ...(type ? { type } : {}), ...(year ? { period: quarter ? `${year}-q${quarter}` : String(year) } : {}) })}`}>Filter this list further →</a></p>
+      <StartNote />
+    </div>
+  </section>
+</Base>

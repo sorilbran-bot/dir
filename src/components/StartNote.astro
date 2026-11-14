@@ -1,0 +1,5 @@
+---
+import { SITE } from '../site.config';
+import { fmtDate } from '../lib/records';
+---
+<p class="startnote"><b>The record begins {fmtDate(new Date(SITE.recordStart))}.</b> Nothing earlier is counted. Older milestones appear only as "Earlier record" when they're part of the story behind a current one.</p>

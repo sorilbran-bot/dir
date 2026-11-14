@@ -1,0 +1,161 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../site.config';
+const check = `<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 11.5l4 4 8-9"/></svg>`;
+const rules = [
+  ['Nothing is paid, ever.', 'No fees, sponsorships, ads or placement. No one can pay to get in or to rank higher.'],
+  ['Facts only.', 'Amount, program, date and named parties. No adjectives, rankings or judgments.'],
+  ['Every fact links to its source.', 'Links sit on the fact itself, and we save an archived copy in case the original disappears.'],
+  ['Founders can ask to be removed.', 'We remove a founder within five business days of the request.'],
+  ['Corrections stay visible.', 'When a fact changes, we fix it and log the change on the record.'],
+  ['Conflicts are disclosed.', 'Any record involving a client of the Lab says so, and gets an independent review before it publishes.'],
+];
+const types = [
+  ['Cohort or program', 'Accepted into an accelerator, incubator, cohort or fellowship', 'applied, waitlisted, info sessions'],
+  ['Selected participation', 'Chosen by a host to pitch, speak, present or demo', 'attending, buying a vendor table'],
+  ['Funding', 'A grant, investment, loan or prize from a named source', '“raising a round,” unnamed investors'],
+  ['Launch', 'A product, service, release or location that went to market', 'coming soon, private previews, demos'],
+  ['Award or recognition', 'A named honor from a named body', 'awards you pay for, self-nominated lists'],
+  ['Partnership', 'A formal agreement with a named organization', 'vague “collaborating with” posts'],
+  ['Growth', 'A contract or expansion with a named counterparty', 'hires, revenue figures, follower counts'],
+];
+---
+<Base title="How it works" description="What the Detroit Innovation Record is, how records and labels work, our rules, and what to expect if we contacted you.">
+  <section class="pagehead">
+    <div class="wrap">
+      <span class="label on-blue">How it works</span>
+      <h1>A library, not a media outlet.</h1>
+      <p class="lede">What goes on the record, how we check it, and what it means if we reached out to you.</p>
+    </div>
+  </section>
+
+  <section class="block" id="why">
+    <div class="wrap">
+      <div class="head">
+        <span class="label">Why it exists</span>
+        <h2>Detroit's innovation is outpacing its receipts.</h2>
+        <p>Milestones happen here every week. Few are documented in a way that lasts, can be checked, or can be found by someone outside the city.</p>
+      </div>
+      <div class="three">
+        <div><h3>Usually only one side posts.</h3><p>A program announces a founder's win the founder never sees. A founder posts a grant the funder never mentions.</p></div>
+        <div><h3>Posts scroll away.</h3><p>Most announcements live in social feeds. A year later they are hard to find and harder to cite.</p></div>
+        <div><h3>Research starts without you.</h3><p>Investors, partners and AI search tools look things up before anyone reaches out. They can only find what is documented.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="labels">
+    <div class="wrap">
+      <div class="head">
+        <span class="label">How records work</span>
+        <h2>Every record links to proof that lives somewhere else.</h2>
+        <p>DIR does not ask to be believed. Each record points to what the parties themselves published, and its label shows which sides have spoken.</p>
+      </div>
+      <div class="labels">
+        <div class="lab"><span class="pill both">Both sides documented</span><p>The business and the organization on the other side have each published the milestone on their own channels.</p></div>
+        <div class="lab"><span class="pill one">One side documented</span><p>One party has published it so far. We let the other side know, so their own announcement can complete the record.</p></div>
+        <div class="lab"><span class="pill launch">Launch verified</span><p>A business announced a product release or opening, and a separate public trace, such as a live listing or license, confirms it happened.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="types">
+    <div class="wrap">
+      <div class="head">
+        <span class="label">What goes in</span>
+        <h2>Seven kinds of milestones. If it qualifies, it goes in.</h2>
+        <p>The business must be in the City of Detroit, confirmed by a registered or licensed address. The milestone must have already happened, on or after November 1, 2026. Nobody decides whether it is impressive enough.</p>
+      </div>
+      <ul class="types">
+        {types.map(([n, y, no]) => <li><b>{n}</b><span>{y}</span><span class="no">{no}</span></li>)}
+      </ul>
+    </div>
+  </section>
+
+  <section class="block" id="earlier">
+    <div class="wrap">
+      <div class="head">
+        <span class="label">Earlier records</span>
+        <h2>We go back in time along a founder's story, not across the calendar.</h2>
+        <p>Nothing before November 1, 2026 is counted. When a current record leads back to an earlier milestone, like the cohort a funded founder came out of, we add it as an "Earlier record" so the story is complete. Earlier records never appear in totals or time filters.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="rules">
+    <div class="wrap">
+      <div class="head">
+        <span class="label">Our rules</span>
+        <h2>The rules we hold ourselves to.</h2>
+      </div>
+      <div class="rules">
+        {rules.map(([h, p]) => <div class="rule"><Fragment set:html={check} /><div><h3>{h}</h3><p>{p}</p></div></div>)}
+      </div>
+    </div>
+  </section>
+
+  <section class="block band" id="contacted">
+    <div class="wrap">
+      <div class="head">
+        <span class="label">If we contacted you</span>
+        <h2>You're here because something you did is going on the record.</h2>
+        <p>There is nothing to buy and nothing to sign. Here is what our message means.</p>
+      </div>
+      <div class="split">
+        <div class="card">
+          <h3>Founders</h3>
+          <p>We found a public post about your milestone and we're logging it. We'll ask four quick questions:</p>
+          <ol>
+            <li>Are these facts right?</li>
+            <li>Which page should we link to for your business?</li>
+            <li>Would you like to add a quote?</li>
+            <li>Can we use this photo?</li>
+          </ol>
+          <p class="note">If we don't hear back within 10 days, we may publish using only facts that are already public, and the record will show that you didn't reply. If you'd rather not be included, tell us and we'll leave you out.</p>
+        </div>
+        <div class="card">
+          <h3>Programs, funders and event hosts</h3>
+          <p>We're logging a milestone involving your organization and one of your founders. We'll ask you to confirm the facts and tell us which page to link.</p>
+          <ul>
+            <li>We can document your events: roster, who was selected, and photos.</li>
+            <li>Afterward we send a factual recap, written in your voice, for you to publish if you'd like.</li>
+            <li>Over time you get a sourced history of your involvement with Detroit founders.</li>
+          </ul>
+          <p class="note">No cost, no sponsorship, and nothing for sale.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="contact">
+    <div class="wrap">
+      <div class="head">
+        <span class="label">Contact</span>
+        <h2>Corrections, removals and milestones to submit.</h2>
+        <p>Write to us with the record or milestone and what should change. We read every message.</p>
+      </div>
+      <div class="contact">
+        <a class="addr" id="email" href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>
+        <button class="copy" id="copy-btn" type="button">Copy address</button>
+        <span id="copy-status" role="status" aria-live="polite"></span>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script is:inline>
+(function () {
+  var btn = document.getElementById('copy-btn'), status = document.getElementById('copy-status'), addr = document.getElementById('email');
+  btn.addEventListener('click', function () {
+    var text = addr.textContent.trim();
+    var fail = function () {
+      try { var r = document.createRange(); r.selectNodeContents(addr); var s = getSelection(); s.removeAllRanges(); s.addRange(r); } catch (e) {}
+      status.textContent = 'Selected. Press Ctrl+C or Cmd+C to copy.';
+    };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { status.textContent = 'Copied.'; }, fail);
+      else fail();
+    } catch (e) { fail(); }
+  });
+})();
+</script>

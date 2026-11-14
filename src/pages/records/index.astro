@@ -1,0 +1,138 @@
+---
+import Base from '../../layouts/Base.astro';
+import RecordCard from '../../components/RecordCard.astro';
+import StartNote from '../../components/StartNote.astro';
+import { SITE, TYPES, TYPE_KEYS, STATUS } from '../../site.config';
+import { loadAll, counted, qLabel } from '../../lib/records';
+
+const { recs } = await loadAll();
+const live = counted(recs);
+const startYear = +SITE.recordStart.slice(0, 4);
+const thisYear = Math.max(new Date().getUTCFullYear(), startYear);
+const years: number[] = [];
+for (let y = thisYear; y >= startYear; y--) years.push(y);
+// Permanent period pages that exist (have records)
+const periods = [...new Set(live.map((r) => `${r.year}-${r.quarter}`))].map((k) => k.split('-').map(Number));
+---
+<Base title="Browse records" description="Filter Detroit Innovation Record milestones by type, time period and documentation status.">
+  <section class="pagehead">
+    <div class="wrap">
+      <span class="label on-blue">Browse</span>
+      <h1>All records</h1>
+      <p class="lede">Filter by type, time and documentation status. Newest first, by the date it happened.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <form class="filters" id="filters" aria-label="Filter records" onsubmit="return false">
+        <label>Type
+          <select name="type">
+            <option value="">All types</option>
+            {TYPE_KEYS.map((t) => <option value={t}>{TYPES[t].label}</option>)}
+          </select>
+        </label>
+        <label>When it happened
+          <select name="period">
+            <option value="">Any time</option>
+            <option value="30d">Last 30 days</option>
+            <option value="this-q">This quarter</option>
+            <option value="last-q">Last quarter</option>
+            {years.map((y) => <option value={String(y)}>{y}</option>)}
+            {years.flatMap((y) => [4, 3, 2, 1].map((q) => <option value={`${y}-q${q}`}>{qLabel(y, q)}</option>))}
+          </select>
+        </label>
+        <label>Documentation
+          <select name="status">
+            <option value="">Any</option>
+            {Object.entries(STATUS).map(([k, v]) => <option value={k}>{v.label}</option>)}
+          </select>
+        </label>
+        <label class="grow">Search
+          <input name="q" type="search" placeholder="Business, founder or organization" autocomplete="off" />
+        </label>
+        <button type="button" id="reset" class="linkbtn">Clear filters</button>
+      </form>
+
+      <p class="count" id="count" role="status" aria-live="polite">{live.length} records</p>
+      <p class="period-note" id="period-note" hidden></p>
+
+      <div class="cards" id="results">{live.map((r) => <RecordCard r={r} />)}</div>
+      <p class="empty" id="empty" hidden>Nothing on the record for this view yet.</p>
+
+      {periods.length > 0 && (
+        <div class="permalinks">
+          <span class="label">Permanent pages you can cite</span>
+          <ul>
+            {periods.map(([y, q]) => <li><a href={`/records/${y}/q${q}/`}>{qLabel(y, q)}</a></li>)}
+            {[...new Set(live.map((r) => r.year))].map((y) => <li><a href={`/records/${y}/`}>All of {y}</a></li>)}
+          </ul>
+        </div>
+      )}
+      <StartNote />
+    </div>
+  </section>
+</Base>
+
+<script is:inline define:vars={{ recordStart: SITE.recordStart }}>
+(function () {
+  var form = document.getElementById('filters');
+  var cards = Array.prototype.slice.call(document.querySelectorAll('#results .rcard'));
+  var count = document.getElementById('count');
+  var empty = document.getElementById('empty');
+  var note = document.getElementById('period-note');
+
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function iso(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function qRange(y, q) { return [y + '-' + pad(q * 3 - 2) + '-01', iso(new Date(y, q * 3, 0))]; }
+
+  // Returns [from, to] inclusive ISO dates, or null for any time.
+  function range(p) {
+    var now = new Date(), y = now.getFullYear(), q = Math.floor(now.getMonth() / 3) + 1, m;
+    if (!p) return null;
+    if (p === '30d') { var s = new Date(now); s.setDate(s.getDate() - 30); return [iso(s), iso(now)]; }
+    if (p === 'this-q') return qRange(y, q);
+    if (p === 'last-q') return q === 1 ? qRange(y - 1, 4) : qRange(y, q - 1);
+    if ((m = /^(\d{4})$/.exec(p))) return [m[1] + '-01-01', m[1] + '-12-31'];
+    if ((m = /^(\d{4})-q([1-4])$/.exec(p))) return qRange(+m[1], +m[2]);
+    return null;
+  }
+
+  function read() {
+    var u = new URLSearchParams(location.search);
+    ['type', 'period', 'status', 'q'].forEach(function (k) { if (form.elements[k]) form.elements[k].value = u.get(k) || ''; });
+  }
+
+  function apply(push) {
+    var type = form.elements.type.value, period = form.elements.period.value,
+        status = form.elements.status.value, q = form.elements.q.value.trim().toLowerCase();
+    var r = range(period), shown = 0;
+    cards.forEach(function (c) {
+      var ok = (!type || c.dataset.type === type) && (!status || c.dataset.status === status) &&
+        (!r || (c.dataset.date >= r[0] && c.dataset.date <= r[1])) &&
+        (!q || c.dataset.search.indexOf(q) !== -1);
+      c.hidden = !ok; if (ok) shown++;
+    });
+    count.textContent = shown + (shown === 1 ? ' record' : ' records');
+    empty.hidden = shown !== 0;
+    if (r && r[0] < recordStart) {
+      note.hidden = false;
+      note.textContent = r[1] < recordStart
+        ? 'This whole period is before the record began, so nothing here is counted.'
+        : 'Part of this period is before the record began on November 1, 2026. Only milestones from that date on are counted.';
+    } else note.hidden = true;
+    if (push) {
+      var u = new URLSearchParams();
+      if (type) u.set('type', type); if (period) u.set('period', period);
+      if (status) u.set('status', status); if (q) u.set('q', form.elements.q.value.trim());
+      var s = u.toString();
+      try { history.replaceState(null, '', location.pathname + (s ? '?' + s : '')); } catch (e) {}
+    }
+  }
+
+  read(); apply(false);
+  form.addEventListener('change', function () { apply(true); });
+  form.elements.q.addEventListener('input', function () { apply(true); });
+  document.getElementById('reset').addEventListener('click', function () { form.reset(); apply(true); });
+})();
+</script>

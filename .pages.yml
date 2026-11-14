@@ -1,0 +1,143 @@
+# Pages CMS setup (https://pagescms.org): turns the repo into fill-in-the-blank forms.
+media:
+  input: public/media
+  output: /media
+
+content:
+  - name: records
+    label: Records
+    type: collection
+    path: src/content/records
+    filename: "{fields.record_id}.md"
+    view:
+      fields: [record_id, title, type, date, status]
+      primary: title
+      sort: [date, record_id]
+      default: { sort: date, order: desc }
+    fields:
+      - { name: record_id, label: "Record ID (DIR-2026-0001)", type: string, required: true, pattern: "^DIR-\\d{4}-\\d{4}$" }
+      - { name: title, label: "Headline: one factual sentence", type: string, required: true }
+      - name: type
+        label: Type
+        type: select
+        required: true
+        options:
+          values:
+            - { value: launch, label: Launch }
+            - { value: cohort, label: Cohort or program }
+            - { value: funding, label: Funding }
+            - { value: selected-participation, label: Selected participation }
+            - { value: award, label: Award or recognition }
+            - { value: partnership, label: Partnership }
+            - { value: growth, label: Growth }
+      - { name: date, label: "Date it happened", type: date, required: true }
+      - { name: published, label: "Date published on DIR", type: date, required: true }
+      - name: businesses
+        label: Businesses
+        type: reference
+        list: true
+        required: true
+        options: { collection: businesses, search: name, value: "{fields.slug}", label: "{fields.name}" }
+      - name: counterparty
+        label: "Other party (leave empty for most launches)"
+        type: reference
+        options: { collection: organizations, search: name, value: "{fields.slug}", label: "{fields.name}" }
+      - { name: program, label: "Program, competition or event name", type: string }
+      - name: status
+        label: Documentation status
+        type: select
+        required: true
+        options:
+          values:
+            - { value: both-sides, label: Both sides documented }
+            - { value: one-side, label: One side documented }
+            - { value: launch-verified, label: Launch verified }
+      - { name: amount, label: "Amount (funding only; leave as undisclosed if not public)", type: string, default: undisclosed }
+      - name: funding_kind
+        label: Funding kind
+        type: select
+        options: { values: [grant, investment, loan, prize] }
+      - name: sources
+        label: Sources
+        type: object
+        list: true
+        required: true
+        fields:
+          - name: side
+            label: Side
+            type: select
+            options:
+              values:
+                - { value: org, label: Organization side }
+                - { value: founder, label: Founder side }
+                - { value: public-trace, label: "Public trace (license, listing)" }
+          - { name: label, label: "What it is", type: string }
+          - { name: url, label: Link, type: string }
+          - { name: archived, label: "Archived copy link", type: string }
+      - name: verification
+        label: Checked with
+        type: object
+        fields:
+          - name: founder
+            label: The business
+            type: select
+            options: { values: [confirmed, pending, no-reply, not-applicable] }
+          - name: counterparty
+            label: The other party
+            type: select
+            options: { values: [confirmed, pending, no-reply, not-applicable] }
+      - { name: pulled_in_by, label: "Earlier records only: which current record led back to it (DIR-2026-0003)", type: string }
+      - { name: client_record, label: "Involves a Five-Talent client (needs second reviewer)", type: boolean, default: false }
+      - name: corrections
+        label: Corrections log
+        type: object
+        list: true
+        fields:
+          - { name: date, type: date }
+          - { name: note, type: string }
+      - { name: example, label: "Fictional example (never shows on the live site)", type: boolean, default: false }
+      - { name: body, label: "Short blurb", type: rich-text }
+
+  - name: businesses
+    label: Businesses
+    type: collection
+    path: src/content/businesses
+    filename: "{fields.slug}.md"
+    view: { fields: [name, detroit_check], primary: name }
+    fields:
+      - { name: name, label: Business name, type: string, required: true }
+      - { name: slug, label: "Web address name (lowercase-with-dashes)", type: string, required: true, pattern: "^[a-z0-9-]+$" }
+      - { name: website, type: string }
+      - name: founders
+        type: object
+        list: true
+        fields:
+          - { name: name, type: string }
+          - { name: profile_url, label: "Profile link", type: string }
+          - { name: profile_consent, label: "Founder said OK to link profile", type: boolean, default: false }
+      - name: detroit_check
+        label: Detroit address checked against
+        type: select
+        required: true
+        options:
+          values:
+            - { value: state-registration, label: State business registration (LARA) }
+            - { value: county-dba, label: County DBA filing }
+            - { value: city-license, label: City business license }
+      - { name: example, type: boolean, default: false }
+
+  - name: organizations
+    label: Organizations
+    type: collection
+    path: src/content/organizations
+    filename: "{fields.slug}.md"
+    view: { fields: [name, kind], primary: name }
+    fields:
+      - { name: name, type: string, required: true }
+      - { name: slug, label: "Web address name (lowercase-with-dashes)", type: string, required: true, pattern: "^[a-z0-9-]+$" }
+      - name: kind
+        type: select
+        required: true
+        options: { values: [funder, program, event-host, government, other] }
+      - { name: website, type: string }
+      - { name: example, type: boolean, default: false }

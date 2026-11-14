@@ -1,0 +1,29 @@
+---
+import Base from '../../layouts/Base.astro';
+import { loadAll, counted } from '../../lib/records';
+
+const { recs, orgs } = await loadAll();
+const live = counted(recs);
+const rows = orgs
+  .map((o) => ({ o, n: live.filter((r) => r.counterparty?.id === o.id).length }))
+  .filter((x) => x.n > 0)
+  .sort((a, b) => a.o.data.name.localeCompare(b.o.data.name));
+---
+<Base title="Organizations" description="Programs, funders and event hosts named in the Detroit Innovation Record.">
+  <section class="pagehead">
+    <div class="wrap">
+      <span class="label on-blue">Browse</span>
+      <h1>Organizations</h1>
+      <p class="lede">Programs, funders and hosts named in at least one record, A to Z.</p>
+    </div>
+  </section>
+  <section class="block">
+    <div class="wrap">
+      {rows.length ? (
+        <ul class="orgtable">
+          {rows.map(({ o, n }) => <li><a href={`/org/${o.id}/`}>{o.data.name}</a><span class="mono">{n} {n === 1 ? 'record' : 'records'}</span></li>)}
+        </ul>
+      ) : <p class="empty">Organizations appear here once they're named in a record.</p>}
+    </div>
+  </section>
+</Base>

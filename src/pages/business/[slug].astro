@@ -1,0 +1,65 @@
+---
+import Base from '../../layouts/Base.astro';
+import StartNote from '../../components/StartNote.astro';
+import { SITE } from '../../site.config';
+import { loadAll, fmtDate } from '../../lib/records';
+
+export async function getStaticPaths() {
+  const { bizs } = await loadAll();
+  return bizs.map((b) => ({ params: { slug: b.id }, props: { id: b.id } }));
+}
+const { recs, bizs } = await loadAll();
+const b = bizs.find((x) => x.id === Astro.props.id)!;
+// Lineage reads as a story: oldest first.
+const story = recs.filter((r) => r.businesses.some((x) => x.id === b.id)).sort((a, c) => a.iso.localeCompare(c.iso));
+const CHECK = { 'state-registration': 'State business registration', 'county-dba': 'County DBA filing', 'city-license': 'City business license' };
+const url = new URL(`/business/${b.id}/`, SITE.url).href;
+const jsonld = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfilePage',
+  url,
+  mainEntity: {
+    '@type': 'Organization',
+    '@id': url + '#org',
+    name: b.data.name,
+    url: b.data.website,
+    location: { '@type': 'Place', name: 'Detroit, Michigan' },
+    founder: b.data.founders.map((f) => ({ '@type': 'Person', name: f.name, ...(f.profile_consent && f.profile_url ? { url: f.profile_url } : {}) })),
+    subjectOf: story.map((r) => new URL(r.url, SITE.url).href),
+  },
+};
+---
+<Base title={b.data.name} description={`${b.data.name}: every milestone on the Detroit Innovation Record, with sources.`} jsonld={jsonld}>
+  <section class="pagehead">
+    <div class="wrap narrow">
+      <span class="label on-blue">Business{b.data.example && ' · Example, fictional'}</span>
+      <h1>{b.data.name}</h1>
+      {b.data.founders.length > 0 && (
+        <p class="lede">Founded by {b.data.founders.map((f, i) => <>{i > 0 && (i === b.data.founders.length - 1 ? ' and ' : ', ')}{f.profile_consent && f.profile_url ? <a class="on-blue-link" href={f.profile_url}>{f.name}</a> : f.name}</>)}</p>
+      )}
+    </div>
+  </section>
+  <section class="block">
+    <div class="wrap narrow">
+      <dl class="facts compact">
+        {b.data.website && <div><dt>Website</dt><dd><a href={b.data.website} rel="noopener">{b.data.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a></dd></div>}
+        <div><dt>In Detroit</dt><dd>Checked against {CHECK[b.data.detroit_check].toLowerCase()}</dd></div>
+        <div><dt>On the record</dt><dd>{story.filter((r) => !r.earlier).length} counted, {story.filter((r) => r.earlier).length} earlier</dd></div>
+      </dl>
+      <h2 class="sec">The story so far</h2>
+      <p class="fine">Every record that names {b.data.name}, oldest first.</p>
+      <ol class="lineage big">
+        {story.map((r) => (
+          <li>
+            <time datetime={r.iso}>{fmtDate(r.d.date)}</time>
+            <span class={`tag sm t-${r.type}`}>{r.typeLabel}</span>
+            {r.earlier && <span class="earlier-tag sm">Earlier record</span>}
+            <a href={r.url}>{r.d.title}</a>
+            <span class={`pill sm ${r.statusCls}`}>{r.statusLabel}</span>
+          </li>
+        ))}
+      </ol>
+      <StartNote />
+    </div>
+  </section>
+</Base>

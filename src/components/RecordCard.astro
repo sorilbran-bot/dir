@@ -1,0 +1,22 @@
+---
+import { fmtDate, type Rec } from '../lib/records';
+interface Props { r: Rec; headingLevel?: 'h2' | 'h3' }
+const { r, headingLevel = 'h3' } = Astro.props;
+const H = headingLevel;
+const search = [r.d.title, r.d.program, r.counterparty?.data.name, ...r.businesses.map((b) => b.data.name), ...r.businesses.flatMap((b) => b.data.founders.map((f) => f.name))]
+  .filter(Boolean).join(' ').toLowerCase();
+---
+<article class="rcard" data-type={r.type} data-date={r.iso} data-status={r.d.status} data-search={search} data-earlier={r.earlier ? '1' : undefined}>
+  <div class="rcard-top">
+    <span class={`tag t-${r.type}`}>{r.typeLabel}</span>
+    <time datetime={r.iso}>{fmtDate(r.d.date)}</time>
+    {r.earlier && <span class="earlier-tag">Earlier record</span>}
+    {r.d.example && <span class="example-tag">Example · fictional</span>}
+  </div>
+  <H class="rcard-title"><a href={r.url}>{r.d.title}</a></H>
+  <div class="rcard-meta">
+    <span class={`pill sm ${r.statusCls}`}>{r.statusLabel}</span>
+    {r.type === 'funding' && <span class="meta-txt">Amount: {r.d.amount === 'undisclosed' ? 'not public' : r.d.amount}</span>}
+    <span class="meta-txt mono">{r.d.record_id}</span>
+  </div>
+</article>
