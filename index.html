@@ -1,0 +1,137 @@
+---
+import Base from '../layouts/Base.astro';
+import RecordCard from '../components/RecordCard.astro';
+import StartNote from '../components/StartNote.astro';
+import { SITE, TYPES, TYPE_KEYS, PILOT_TYPES } from '../site.config';
+import { loadAll, counted, quarterOf } from '../lib/records';
+
+const { recs, orgs } = await loadAll();
+const live = counted(recs);
+const latest = live.slice(0, 6);
+const countOf = (t: string) => live.filter((r) => r.type === t).length;
+const otherTypes = TYPE_KEYS.filter((t) => !(PILOT_TYPES as readonly string[]).includes(t));
+const now = new Date();
+const year = now.getUTCFullYear();
+const orgsWithRecords = orgs
+  .filter((o) => live.some((r) => r.counterparty?.id === o.id))
+  .sort((a, b) => a.data.name.localeCompare(b.data.name));
+const tallyData = live.map((r) => [r.iso, r.type]);
+const WORDS: Record<string, [string, string]> = { launch: ['launch', 'launches'], cohort: ['cohort', 'cohorts'], funding: ['funding record', 'funding records'] };
+const word = (t: string, n: number) => WORDS[t][n === 1 ? 0 : 1];
+const pilotLabels = WORDS;
+
+const jsonld = {
+  '@context': 'https://schema.org',
+  '@type': 'Dataset',
+  name: SITE.name,
+  description: SITE.description,
+  url: SITE.url,
+  temporalCoverage: `${SITE.recordStart}/..`,
+  spatialCoverage: { '@type': 'Place', name: 'Detroit, Michigan' },
+  isAccessibleForFree: true,
+  publisher: { '@type': 'Organization', name: SITE.publisher, url: SITE.publisherUrl, founder: { '@type': 'Person', name: SITE.founder } },
+  distribution: { '@type': 'DataDownload', encodingFormat: 'application/json', contentUrl: `${SITE.url}/records.json` },
+};
+---
+<Base jsonld={jsonld}>
+  <section class="hero">
+    <div class="wrap hero-inner">
+      <h1>Detroit’s innovation, <em>on the record.</em></h1>
+      <p class="lede">A public, machine-readable record of what Detroit founders build, so the innovation never gets too far from the hands that built it.</p>
+      <form class="search" action="/records/" method="get" role="search">
+        <label for="q" class="sr">Search records</label>
+        <input id="q" name="q" type="search" placeholder="Search a business, founder or organization" autocomplete="off" />
+        <button type="submit">Search</button>
+      </form>
+      <div class="chips" aria-label="Browse by time">
+        <span class="label on-blue">Browse by time</span>
+        <a class="chip-link" href="/records/?period=30d">Last 30 days</a>
+        <a class="chip-link" href="/records/?period=this-q">This quarter</a>
+        <a class="chip-link" href="/records/?period=last-q">Last quarter</a>
+        <a class="chip-link" href={`/records/?period=${year}`}>{year}</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="head-row"><h2>Browse by type</h2><a href="/records/">All records →</a></div>
+      <div class="tiles">
+        {PILOT_TYPES.map((t) => (
+          <a class={`tile tile-${t}`} href={`/records/${t}/`}>
+            <span class="tile-n">{countOf(t)}</span>
+            <span class="tile-name">{TYPES[t].plural}</span>
+            <span class="tile-blurb">{TYPES[t].blurb}</span>
+          </a>
+        ))}
+      </div>
+      <p class="other-types"><span class="label">Also on the record</span>
+        {otherTypes.map((t) => <a href={`/records/${t}/`}>{TYPES[t].plural} <span class="mono">({countOf(t)})</span></a>)}
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="head-row"><h2>Latest on the record</h2><a href="/records/">See everything →</a></div>
+      {latest.length ? (
+        <div class="cards">{latest.map((r) => <RecordCard r={r} />)}</div>
+      ) : (
+        <p class="empty">The first records are being verified now. Check back soon.</p>
+      )}
+      <p class="fine">Newest first, by the date it happened. Nothing is featured or ranked.</p>
+    </div>
+  </section>
+
+  <section class="block band">
+    <div class="wrap tally-wrap">
+      <div>
+        <span class="label">This quarter so far</span>
+        <h2 id="tally-q">Q{quarterOf(now)} {year}</h2>
+      </div>
+      <ul class="tally" id="tally" data-records={JSON.stringify(tallyData)} data-labels={JSON.stringify(pilotLabels)}>
+        {PILOT_TYPES.map((t) => { const n = live.filter((r) => r.type === t && r.year === year && r.quarter === quarterOf(now)).length; return <li><b>{n}</b> {word(t, n)}</li>; })}
+      </ul>
+      <a class="btn" href="/records/?period=this-q">See this quarter</a>
+    </div>
+  </section>
+
+  {orgsWithRecords.length > 0 && (
+    <section class="block">
+      <div class="wrap">
+        <div class="head-row"><h2>Browse by organization</h2><a href="/organizations/">All organizations →</a></div>
+        <p class="fine">Programs, funders and hosts named in at least one record, A to Z.</p>
+        <ul class="orglist">
+          {orgsWithRecords.map((o) => <li><a href={`/org/${o.id}/`}>{o.data.name}</a></li>)}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  <section class="block">
+    <div class="wrap"><StartNote /></div>
+  </section>
+</Base>
+
+<script is:inline>
+(function () {
+  var el = document.getElementById('tally');
+  if (!el) return;
+  try {
+    var data = JSON.parse(el.dataset.records || '[]');
+    var labels = JSON.parse(el.dataset.labels || '{}');
+    var now = new Date();
+    var y = now.getFullYear(), q = Math.floor(now.getMonth() / 3) + 1;
+    var counts = {};
+    Object.keys(labels).forEach(function (t) { counts[t] = 0; });
+    data.forEach(function (r) {
+      var ry = +r[0].slice(0, 4), rq = Math.floor((+r[0].slice(5, 7) - 1) / 3) + 1;
+      if (ry === y && rq === q && r[1] in counts) counts[r[1]]++;
+    });
+    document.getElementById('tally-q').textContent = 'Q' + q + ' ' + y;
+    el.innerHTML = Object.keys(labels).map(function (t) {
+      return '<li><b>' + counts[t] + '</b> ' + labels[t][counts[t] === 1 ? 0 : 1] + '</li>';
+    }).join('');
+  } catch (e) {}
+})();
+</script>
