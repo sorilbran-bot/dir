@@ -1,18 +1,12 @@
 /* Detroit Innovation Record — online-magazine feel. Dark blue + orange; yellow is reserved for documentation status. */
 :root {
-  --bg: #F5F5F3; --surface: #FFFFFF; --ink: #1D1B1B; --muted: #4A4D55; --line: #DEDFE3;
+  --bg: #FFFFFF; --surface: #FFFFFF; --ink: #1D1B1B; --muted: #4A4D55; --line: #DEDFE3;
   --blue: #1A3470; --blue-ink: #FFFFFF; --blue-soft: #C9D2EA; --link: #1A3470;
-  --orange: #F07A1A; --orange-ink: #A84A06; --yellow: #FDC32A; --on-yellow: #1D1B1B; --band: #EAEBEF;
+  --orange: #F07A1A; --orange-ink: #A84A06; --yellow: #FDC32A; --on-yellow: #1D1B1B; --band: #F3F5FA;
   --display: 'Bricolage Grotesque', 'Arial Narrow', system-ui, sans-serif;
   --body: 'Instrument Sans', 'Helvetica Neue', Arial, sans-serif;
   --mono: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #12151D; --surface: #1A1E29; --ink: #EEEFF2; --muted: #A9AEBB; --line: #2C3240;
-    --link: #9DB4F0; --orange-ink: #F5A15C; --band: #171B25; color-scheme: dark;
-  }
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -50,7 +44,7 @@ img { max-width: 100%; }
 .hero h1 em { font-style: normal; color: var(--yellow); }
 .lede { font-size: 19px; color: var(--blue-soft); max-width: 40em; }
 .search { display: flex; gap: 8px; max-width: 640px; margin-top: 6px; }
-.search input { flex: 1; min-width: 0; font: inherit; font-size: 17px; padding: 13px 16px; border-radius: 10px; border: 0; background: #fff; color: #1D1B1B; }
+.search input { flex: 1; min-width: 0; font: inherit; font-size: 17px; padding: 13px 16px; border-radius: 10px; border: 1px solid var(--line); background: #fff; color: #1D1B1B; }
 .search button { font: inherit; font-weight: 700; background: var(--orange); color: #1D1B1B; border: 0; border-radius: 10px; padding: 0 20px; cursor: pointer; min-height: 48px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .chips .label { margin-right: 6px; }
@@ -85,7 +79,7 @@ h2.sec { font-size: 26px; font-weight: 700; margin-top: 36px; margin-bottom: 4px
 .tile { display: flex; flex-direction: column; gap: 6px; padding: 24px; border-radius: 14px; text-decoration: none; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-top: 6px solid var(--blue); transition: transform .15s; }
 .tile:hover { transform: translateY(-2px); border-color: var(--link); }
 .tile-cohort { border-top-color: var(--orange); }
-.tile-funding { border-top-color: var(--ink); }
+.tile-funding { border-top-color: #7D8FC2; }
 .tile-n { font-family: var(--display); font-weight: 800; font-size: 56px; line-height: 1; letter-spacing: -0.04em; }
 .tile-name { font-family: var(--display); font-weight: 700; font-size: 24px; }
 .tile-blurb { color: var(--muted); font-size: 15px; }
@@ -102,7 +96,7 @@ h2.sec { font-size: 26px; font-weight: 700; margin-top: 36px; margin-bottom: 4px
 .rcard-meta { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; font-size: 14px; color: var(--muted); margin-top: auto; }
 .tag { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: var(--band); color: var(--ink); white-space: nowrap; }
 .tag.t-launch { background: var(--blue); color: #fff; }
-.tag.t-funding { background: var(--ink); color: var(--bg); }
+.tag.t-funding { background: #E3E8F5; color: var(--blue); }
 .tag.t-cohort { background: var(--orange); color: #1D1B1B; }
 .tag.sm { font-size: 10px; padding: 2px 6px; }
 .earlier-tag, .example-tag { font-family: var(--mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; border: 1px dashed var(--muted); color: var(--muted); white-space: nowrap; }
@@ -133,7 +127,7 @@ h2.sec { font-size: 26px; font-weight: 700; margin-top: 36px; margin-bottom: 4px
 .filters { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-end; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
 .filters label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: var(--muted); }
 .filters label.grow { flex: 1 1 220px; }
-.filters select, .filters input { font: inherit; font-size: 16px; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); min-height: 44px; }
+.filters select, .filters input { font: inherit; font-size: 16px; padding: 10px 12px; border-radius: 8px; border: 1px solid #C9CCD3; background: #fff; color: var(--ink); min-height: 44px; }
 .linkbtn { font: inherit; font-size: 15px; background: none; border: 0; color: var(--link); text-decoration: underline; cursor: pointer; min-height: 44px; }
 .count { font-family: var(--display); font-size: 22px; font-weight: 700; }
 .count-sub { font-family: var(--body); font-size: 16px; font-weight: 500; color: var(--muted); }
