@@ -3,7 +3,7 @@ export const SITE = {
   name: 'Detroit Innovation Record',
   short: 'DIR',
   url: 'https://detroitinnovationrecord.com', // change if the domain differs
-  contactEmail: '[CONTACT EMAIL]', // e.g. record@detroitmediainnovation.com
+  contactEmail: 'records@detroitinnovationrecord.com', // e.g. record@detroitmediainnovation.com
   publisher: 'Detroit Media and Innovation Lab',
   publisherUrl: 'https://detroitmediainnovation.com',
   founder: 'Sorilbran Stone',
