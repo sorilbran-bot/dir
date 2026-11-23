@@ -57,3 +57,4 @@ Record IDs run in order: `DIR-2026-0001`, `DIR-2026-0002`, and so on.
 ## Removing the fictional examples for good
 
 Delete the files marked `example: true` in the three `src/content/` folders (Fernbrook Labs, Northline Robotics, Gratiot Goods, Maple & Grand Coffee, Riverline Seed Fund, Eastside Venture Studio, and DIR-2026-0001 to 0005). Real records should start at `DIR-2026-0001`.
+
