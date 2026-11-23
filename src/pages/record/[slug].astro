@@ -94,7 +94,7 @@ const jsonld = {
         {r.counterparty && <div><dt>Other party</dt><dd><a href={`/org/${r.counterparty.id}/`}>{r.counterparty.data.name}</a></dd></div>}
         {d.program && <div><dt>Program or event</dt><dd>{d.program}</dd></div>}
         {r.type === 'funding' && <div><dt>Amount</dt><dd>{d.amount === 'undisclosed' ? 'Not made public' : d.amount}{d.funding_kind && ` (${d.funding_kind})`}</dd></div>}
-        <div><dt>In Detroit</dt><dd>Address checked against {r.businesses.map((b) => ({ 'state-registration': 'state business registration', 'county-dba': 'county DBA filing', 'city-license': 'city business license' })[b.data.detroit_check]).filter((v, i, a) => a.indexOf(v) === i).join(' and ')}</dd></div>
+        <div><dt>In Detroit</dt><dd>Address checked against {r.businesses.map((b) => ({ 'state-registration': 'state business registration', 'county-dba': 'county DBA filing', 'city-license': 'city business license', 'program-address-proof': 'the proof of Detroit address the program required' })[b.data.detroit_check]).filter((v, i, a) => a.indexOf(v) === i).join(' and ')}</dd></div>
         <div><dt>Record ID</dt><dd class="mono">{d.record_id}</dd></div>
         <div><dt>Published</dt><dd>{fmtDate(d.published)}</dd></div>
       </dl>
@@ -127,7 +127,7 @@ const jsonld = {
           <p class="fine">Other records for {r.businesses.map((b) => b.data.name).join(' and ')}, oldest first.</p>
           <ol class="lineage">
             {lineage.map((x) => (
-              <li><time datetime={x.iso}>{fmtDate(x.d.date)}</time> <span class={`tag sm t-${x.type}`}>{x.typeLabel}</span>{x.earlier && <span class="earlier-tag sm">Earlier record</span>}<a href={x.url}>{x.d.title}</a></li>
+              <li><time datetime={x.iso}>{fmtDate(x.d.date)}</time> <span class={`tag sm t-${x.type}`}>{x.typeLabel}</span> <a href={x.url}>{x.d.title}</a>{x.earlier && <span class="earlier-tag sm">Earlier record</span>}</li>
             ))}
           </ol>
         </>

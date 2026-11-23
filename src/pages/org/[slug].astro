@@ -3,7 +3,7 @@ import Base from '../../layouts/Base.astro';
 import RecordCard from '../../components/RecordCard.astro';
 import StartNote from '../../components/StartNote.astro';
 import { SITE } from '../../site.config';
-import { loadAll } from '../../lib/records';
+import { loadAll, fmtDate, isoDate } from '../../lib/records';
 
 export async function getStaticPaths() {
   const { orgs } = await loadAll();
@@ -11,33 +11,88 @@ export async function getStaticPaths() {
 }
 const { recs, orgs } = await loadAll();
 const o = orgs.find((x) => x.id === Astro.props.id)!;
-const list = recs.filter((r) => r.counterparty?.id === o.id && !r.earlier);
-const businesses = [...new Map(list.flatMap((r) => r.businesses).map((b) => [b.id, b])).values()].sort((a, b) => a.data.name.localeCompare(b.data.name));
+const d = o.data;
+const all = recs.filter((r) => r.counterparty?.id === o.id);
+const list = all.filter((r) => !r.earlier);
+const businesses = [...new Map(all.flatMap((r) => r.businesses).map((b) => [b.id, b])).values()].sort((a, b) => a.data.name.localeCompare(b.data.name));
 const KIND = { funder: 'Funder', program: 'Program', 'event-host': 'Event host', government: 'Government', other: 'Organization' };
+const rounds = [...d.rounds].reverse(); // newest first
+const inRound = (slug: string) => all.filter((r) => r.d.round === slug);
 const url = new URL(`/org/${o.id}/`, SITE.url).href;
+const c = d.criteria;
 const jsonld = {
   '@context': 'https://schema.org',
   '@type': 'ProfilePage',
   url,
-  mainEntity: { '@type': 'Organization', name: o.data.name, url: o.data.website, subjectOf: list.map((r) => new URL(r.url, SITE.url).href) },
+  mainEntity: {
+    '@type': 'Organization',
+    name: d.name,
+    url: d.website,
+    description: d.summary,
+    subjectOf: [
+      ...(c ? [{ '@type': 'DigitalDocument', name: c.source_label, url: c.source_url, dateCreated: c.source_date }] : []),
+      ...list.map((r) => new URL(r.url, SITE.url).href),
+    ],
+  },
 };
 ---
-<Base title={o.data.name} description={`${o.data.name}: its documented involvement with Detroit founders and businesses.`} jsonld={jsonld}>
+<Base title={d.name} description={d.summary ?? `${d.name}: its documented involvement with Detroit founders and businesses.`} jsonld={jsonld}>
   <section class="pagehead">
     <div class="wrap">
-      <span class="label on-blue">{KIND[o.data.kind]}{o.data.example && ' · Example, fictional'}</span>
-      <h1>{o.data.name}</h1>
-      <p class="lede">A sourced history of this organization's involvement with Detroit founders and businesses.</p>
+      <span class="label on-blue">{KIND[d.kind]}{d.example && ' · Example, fictional'}</span>
+      <h1>{d.name}</h1>
+      <p class="lede">{d.summary ?? "A sourced history of this organization's involvement with Detroit founders and businesses."}</p>
     </div>
   </section>
   <section class="block">
     <div class="wrap">
       <p class="count">{list.length} {list.length === 1 ? 'record' : 'records'} · {businesses.length} Detroit {businesses.length === 1 ? 'business' : 'businesses'}
-        {o.data.website && <> · <a href={o.data.website} rel="noopener">Website</a></>}</p>
-      <div class="cards">{list.map((r) => <RecordCard r={r} />)}</div>
+        {d.website && <> · <a href={d.website} rel="noopener">Official page</a></>}</p>
+      {d.run_by.length > 0 && <p class="runby">Run by {d.run_by.join(', ')}.</p>}
+
+      {c && (
+        <div class="criteria" id="criteria">
+          <h2 class="sec">Eligibility on file</h2>
+          <p class="crit-src">
+            From <a href={c.source_url} rel="noopener">{c.source_label}</a>{c.source_date && <>, {c.source_date}</>}.
+            {c.archived_url && <> <a href={c.archived_url} rel="noopener">Archived copy</a>.</>}
+          </p>
+          <dl class="crit-list">
+            <dt>Where the business must be</dt><dd>{c.location_rule}</dd>
+            {c.location_proof && <><dt>What applicants had to show</dt><dd>{c.location_proof}</dd></>}
+            {c.other.length > 0 && <><dt>Other requirements</dt><dd><ul>{c.other.map((x) => <li>{x}</li>)}</ul></dd></>}
+          </dl>
+          {c.note && <p class="crit-note">{c.note}</p>}
+          <p class="crit-dates mono">Saved <time datetime={isoDate(c.captured)}>{fmtDate(c.captured)}</time> · Last checked <time datetime={isoDate(c.last_checked)}>{fmtDate(c.last_checked)}</time></p>
+        </div>
+      )}
+
+      {rounds.length > 0 && (
+        <>
+          <h2 class="sec">Rounds</h2>
+          <ul class="rounds">
+            {rounds.map((rd) => {
+              const n = inRound(rd.slug).length;
+              return (
+                <li>
+                  <a class="round-name" href={`/org/${o.id}/${rd.slug}/`}>{rd.label}</a>
+                  <span class="round-meta">
+                    {rd.opens && rd.closes && <>Applications {fmtDate(rd.opens)} to {fmtDate(rd.closes)}</>}
+                    {rd.announced && <> · Announced {fmtDate(rd.announced)}</>}
+                  </span>
+                  <span class="mono">{n} {n === 1 ? 'record' : 'records'}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      )}
+
+      <h2 class="sec">Records</h2>
+      {list.length ? <div class="cards">{list.map((r) => <RecordCard r={r} />)}</div> : <p class="empty">No records yet.</p>}
       {businesses.length > 0 && (
         <>
-          <h2 class="sec">Businesses named with {o.data.name}</h2>
+          <h2 class="sec">Businesses named with {d.name}</h2>
           <ul class="orglist">{businesses.map((b) => <li><a href={`/business/${b.id}/`}>{b.data.name}</a></li>)}</ul>
         </>
       )}
@@ -45,3 +100,25 @@ const jsonld = {
     </div>
   </section>
 </Base>
+
+<style is:global>
+/* Program pages: criteria and rounds */
+.runby { color: var(--muted); margin-top: 6px; }
+.criteria { background: var(--surface); border: 1px solid var(--line); border-left: 6px solid var(--yellow); border-radius: 10px; padding: 22px 24px; margin: 28px 0; }
+.criteria .sec { margin-top: 0; }
+.crit-src { margin: 8px 0 14px; }
+.crit-list { display: grid; grid-template-columns: minmax(150px, 220px) 1fr; gap: 10px 22px; margin: 0; }
+.crit-list dt { font-weight: 600; color: var(--muted); }
+.crit-list dd { margin: 0; }
+.crit-list ul { margin: 0; padding-left: 18px; }
+.crit-list li + li { margin-top: 4px; }
+.crit-note { color: var(--muted); font-size: 15px; margin-top: 14px; }
+.crit-dates { font-size: 13px; color: var(--muted); margin-top: 12px; }
+.rounds { list-style: none; padding: 0; margin: 12px 0 28px; border-top: 1px solid var(--line); }
+.rounds li { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.round-name { font-family: var(--display); font-weight: 700; font-size: 20px; min-width: 110px; }
+.round-meta { color: var(--muted); flex: 1; }
+.round-facts { margin-bottom: 8px; }
+.crumb-on-blue { color: inherit; }
+@media (max-width: 640px) { .crit-list { grid-template-columns: 1fr; gap: 2px; } .crit-list dd { margin-bottom: 10px; } }
+</style>

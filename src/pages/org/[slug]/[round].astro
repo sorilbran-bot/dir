@@ -1,0 +1,75 @@
+---
+import Base from '../../../layouts/Base.astro';
+import RecordCard from '../../../components/RecordCard.astro';
+import StartNote from '../../../components/StartNote.astro';
+import { SITE } from '../../../site.config';
+import { loadAll, fmtDate } from '../../../lib/records';
+
+export async function getStaticPaths() {
+  const { orgs } = await loadAll();
+  return orgs.flatMap((o) => o.data.rounds.map((rd) => ({ params: { slug: o.id, round: rd.slug }, props: { id: o.id, round: rd.slug } })));
+}
+const { recs, orgs } = await loadAll();
+const o = orgs.find((x) => x.id === Astro.props.id)!;
+const rd = o.data.rounds.find((x) => x.slug === Astro.props.round)!;
+const list = recs.filter((r) => r.counterparty?.id === o.id && r.d.round === rd.slug);
+const counted = list.filter((r) => !r.earlier);
+const title = `${o.data.name}, ${rd.label}`;
+const url = new URL(`/org/${o.id}/${rd.slug}/`, SITE.url).href;
+const jsonld = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: title,
+  url,
+  isPartOf: new URL(`/org/${o.id}/`, SITE.url).href,
+  about: { '@type': 'Organization', name: o.data.name, url: o.data.website },
+  hasPart: list.map((r) => new URL(r.url, SITE.url).href),
+};
+---
+<Base title={title} description={`Detroit businesses documented in ${title}${rd.awards ? `: ${rd.awards}` : ''}.`} jsonld={jsonld}>
+  <section class="pagehead">
+    <div class="wrap">
+      <span class="label on-blue"><a class="crumb-on-blue" href={`/org/${o.id}/`}>{o.data.name}</a></span>
+      <h1>{rd.label}</h1>
+      {rd.awards && <p class="lede">{rd.awards}.</p>}
+    </div>
+  </section>
+  <section class="block">
+    <div class="wrap">
+      <dl class="crit-list round-facts">
+        {rd.opens && rd.closes && <><dt>Applications</dt><dd>{fmtDate(rd.opens)} to {fmtDate(rd.closes)}</dd></>}
+        {rd.announced && <><dt>Winners announced</dt><dd>{fmtDate(rd.announced)}{rd.venue && <>, {rd.venue}</>}</dd></>}
+        {!rd.announced && rd.venue && <><dt>Where</dt><dd>{rd.venue}</dd></>}
+        {rd.announcement_url && <><dt>Official announcement</dt><dd><a href={rd.announcement_url} rel="noopener">Read it at the source</a></dd></>}
+        {o.data.criteria && <><dt>Eligibility</dt><dd><a href={`/org/${o.id}/#criteria`}>Rules on file for this program</a></dd></>}
+      </dl>
+      {rd.note && <p class="crit-note">{rd.note}</p>}
+      <h2 class="sec">Records from this round</h2>
+      <p class="count">{counted.length} {counted.length === 1 ? 'record' : 'records'}{list.length > counted.length && <> · {list.length - counted.length} earlier</>}</p>
+      {list.length ? <div class="cards">{list.map((r) => <RecordCard r={r} />)}</div> : <p class="empty">No records from this round yet.</p>}
+      <StartNote />
+    </div>
+  </section>
+</Base>
+
+<style is:global>
+/* Program pages: criteria and rounds */
+.runby { color: var(--muted); margin-top: 6px; }
+.criteria { background: var(--surface); border: 1px solid var(--line); border-left: 6px solid var(--yellow); border-radius: 10px; padding: 22px 24px; margin: 28px 0; }
+.criteria .sec { margin-top: 0; }
+.crit-src { margin: 8px 0 14px; }
+.crit-list { display: grid; grid-template-columns: minmax(150px, 220px) 1fr; gap: 10px 22px; margin: 0; }
+.crit-list dt { font-weight: 600; color: var(--muted); }
+.crit-list dd { margin: 0; }
+.crit-list ul { margin: 0; padding-left: 18px; }
+.crit-list li + li { margin-top: 4px; }
+.crit-note { color: var(--muted); font-size: 15px; margin-top: 14px; }
+.crit-dates { font-size: 13px; color: var(--muted); margin-top: 12px; }
+.rounds { list-style: none; padding: 0; margin: 12px 0 28px; border-top: 1px solid var(--line); }
+.rounds li { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.round-name { font-family: var(--display); font-weight: 700; font-size: 20px; min-width: 110px; }
+.round-meta { color: var(--muted); flex: 1; }
+.round-facts { margin-bottom: 8px; }
+.crumb-on-blue { color: inherit; }
+@media (max-width: 640px) { .crit-list { grid-template-columns: 1fr; gap: 2px; } .crit-list dd { margin-bottom: 10px; } }
+</style>

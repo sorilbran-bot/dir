@@ -14,6 +14,7 @@ const records = defineCollection({
     businesses: z.array(reference('businesses')).min(1),
     counterparty: reference('organizations').optional(), // launches may have none
     program: z.string().optional(), // cohort, competition or event name
+    round: z.string().optional(), // slug of a round listed on the counterparty's program page, e.g. round-3
     status: z.enum(['both-sides', 'one-side', 'launch-verified']),
     amount: z.string().default('undisclosed'), // funding only, e.g. "$250,000"
     funding_kind: z.enum(['grant', 'investment', 'loan', 'prize']).optional(),
@@ -52,7 +53,7 @@ const businesses = defineCollection({
         }),
       )
       .default([]),
-    detroit_check: z.enum(['state-registration', 'county-dba', 'city-license']),
+    detroit_check: z.enum(['state-registration', 'county-dba', 'city-license', 'program-address-proof']),
     example: z.boolean().default(false),
   }),
 });
@@ -64,6 +65,38 @@ const organizations = defineCollection({
     name: z.string(),
     kind: z.enum(['funder', 'program', 'event-host', 'government', 'other']),
     website: z.string().url().optional(),
+    summary: z.string().optional(), // one or two plain sentences: what it is, who runs it
+    run_by: z.array(z.string()).default([]),
+    // Programs only: the eligibility rules DIR checked records against, with where and when they were captured.
+    criteria: z
+      .object({
+        source_label: z.string(),
+        source_url: z.string().url(),
+        archived_url: z.string().url().optional(),
+        source_date: z.string().optional(), // date or version printed on the source
+        captured: z.coerce.date(), // when DIR saved it
+        last_checked: z.coerce.date(), // when DIR last confirmed it is still current
+        location_rule: z.string(), // the geographic requirement, in plain words
+        location_proof: z.string().optional(), // what applicants had to show
+        other: z.array(z.string()).default([]),
+        note: z.string().optional(),
+      })
+      .optional(),
+    rounds: z
+      .array(
+        z.object({
+          slug: z.string(), // round-3
+          label: z.string(), // Round 3
+          opens: z.coerce.date().optional(),
+          closes: z.coerce.date().optional(),
+          announced: z.coerce.date().optional(),
+          awards: z.string().optional(),
+          venue: z.string().optional(),
+          announcement_url: z.string().url().optional(),
+          note: z.string().optional(),
+        }),
+      )
+      .default([]),
     example: z.boolean().default(false),
   }),
 });
