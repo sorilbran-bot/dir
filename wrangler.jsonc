@@ -1,5 +1,7 @@
 // Cloudflare deploy settings: serve the built site from ./dist as static files.
 {
+  "workers_dev": false,
+  "preview_urls": false,
   "name": "dir",
   "compatibility_date": "2026-11-01",
   "assets": {
