@@ -1,0 +1,41 @@
+name: Timestamp records
+
+on:
+  push:
+    branches: [main]
+    paths: ['src/content/records/**']
+  schedule:
+    - cron: '23 */6 * * *' # every 6 hours: finish proofs once Bitcoin confirms them
+  workflow_dispatch: # lets you run it by hand from the Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  group: timestamp
+  cancel-in-progress: false
+
+jobs:
+  timestamp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install opentimestamps-client
+      - name: Stamp new or changed records
+        run: python scripts/timestamp.py stamp
+      - name: Finish proofs Bitcoin has confirmed
+        run: python scripts/timestamp.py upgrade
+      - name: Save proofs
+        run: |
+          git config user.name "DIR timestamp bot"
+          git config user.email "intake@detroitinnovationrecord.com"
+          git add public/proofs
+          if git diff --cached --quiet; then
+            echo "Nothing new to save."
+          else
+            git commit -m "Timestamp proofs $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+          fi
