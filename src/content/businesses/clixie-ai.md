@@ -1,6 +1,8 @@
 ---
 slug: clixie-ai
 name: Clixie AI
-founders: []
+website: https://www.clixie.ai
+founders:
+  - name: Tim Moore
 detroit_check: program-address-proof
 ---
