@@ -78,6 +78,9 @@ const jsonld = {
                   <a class="round-name" href={`/org/${o.id}/${rd.slug}/`}>{rd.label}</a>
                   <span class="round-meta">
                     {rd.opens && rd.closes && <>Applications {fmtDate(rd.opens)} to {fmtDate(rd.closes)}</>}
+                    {!rd.opens && rd.closes && <>Applications closed {fmtDate(rd.closes)}</>}
+                    {rd.finalists_announced && !rd.announced && <> · Finalists expected {fmtDate(rd.finalists_announced)}</>}
+                    {rd.event && <> · {(rd.event_label ?? 'Event') + ' ' + fmtDate(rd.event)}</>}
                     {rd.announced && <> · Announced {fmtDate(rd.announced)}</>}
                   </span>
                   <span class="mono">{n} {n === 1 ? 'record' : 'records'}</span>

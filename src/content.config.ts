@@ -103,6 +103,9 @@ const organizations = defineCollection({
           opens: z.coerce.date().optional(),
           closes: z.coerce.date().optional(),
           announced: z.coerce.date().optional(),
+          finalists_announced: z.coerce.date().optional(), // when the program says it will name finalists or a shortlist
+          event: z.coerce.date().optional(), // finals, pitch day or showcase
+          event_label: z.string().optional(), // what the program calls it, e.g. Finals, Pitch Day
           awards: z.string().optional(),
           venue: z.string().optional(),
           announcement_url: z.string().url().optional(),

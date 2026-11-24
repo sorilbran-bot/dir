@@ -38,8 +38,11 @@ const jsonld = {
     <div class="wrap">
       <dl class="crit-list round-facts">
         {rd.opens && rd.closes && <><dt>Applications</dt><dd>{fmtDate(rd.opens)} to {fmtDate(rd.closes)}</dd></>}
+        {!rd.opens && rd.closes && <><dt>Applications closed</dt><dd>{fmtDate(rd.closes)}</dd></>}
+        {rd.finalists_announced && !rd.announced && <><dt>Finalists expected</dt><dd>{fmtDate(rd.finalists_announced)}</dd></>}
+        {rd.event && <><dt>{rd.event_label ?? 'Event'}</dt><dd>{fmtDate(rd.event)}{!rd.announced && rd.venue && <>, {rd.venue}</>}</dd></>}
         {rd.announced && <><dt>Winners announced</dt><dd>{fmtDate(rd.announced)}{rd.venue && <>, {rd.venue}</>}</dd></>}
-        {!rd.announced && rd.venue && <><dt>Where</dt><dd>{rd.venue}</dd></>}
+        {!rd.announced && !rd.event && rd.venue && <><dt>Where</dt><dd>{rd.venue}</dd></>}
         {rd.announcement_url && <><dt>Official announcement</dt><dd><a href={rd.announcement_url} rel="noopener">Read it at the source</a></dd></>}
         {o.data.criteria && <><dt>Eligibility</dt><dd><a href={`/org/${o.id}/#criteria`}>Rules on file for this program</a></dd></>}
       </dl>
