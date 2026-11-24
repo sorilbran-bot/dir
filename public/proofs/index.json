@@ -8,6 +8,13 @@
       "sha256": "5a2e0d23a80913a9ac8d0d7829c76a61179cbd322421ea6186881755693d1826",
       "stamped": "2026-11-24T00:49:04Z",
       "status": "anchored"
+    },
+    {
+      "file": "/proofs/DIR-2026-0001/a1d56c2d57d1.md",
+      "proof": "/proofs/DIR-2026-0001/a1d56c2d57d1.md.ots",
+      "sha256": "a1d56c2d57d11b53e6fe5f082e8675014a2ab6cafd6e27b3875703b946152baa",
+      "stamped": "2026-11-24T15:13:30Z",
+      "status": "pending"
     }
   ],
   "DIR-2026-0002": [
@@ -21,17 +28,28 @@
       "status": "anchored"
     },
     {
+      "anchored_checked": "2026-11-24T15:13:58Z",
+      "bitcoin_block": 977323,
       "file": "/proofs/DIR-2026-0002/7836a03a65b5.md",
       "proof": "/proofs/DIR-2026-0002/7836a03a65b5.md.ots",
       "sha256": "7836a03a65b531fe8ce05c76bb4bf5af36654a12353a3ffd757922f413eaaacf",
       "stamped": "2026-11-24T04:02:48Z",
-      "status": "pending"
+      "status": "anchored"
     },
     {
+      "anchored_checked": "2026-11-24T15:14:01Z",
+      "bitcoin_block": 977323,
       "file": "/proofs/DIR-2026-0002/72e127ea2976.md",
       "proof": "/proofs/DIR-2026-0002/72e127ea2976.md.ots",
       "sha256": "72e127ea29765faa346f34171d892d09f5693ed1d77f44208554659403d7899a",
       "stamped": "2026-11-24T04:21:53Z",
+      "status": "anchored"
+    },
+    {
+      "file": "/proofs/DIR-2026-0002/d9d495be69f7.md",
+      "proof": "/proofs/DIR-2026-0002/d9d495be69f7.md.ots",
+      "sha256": "d9d495be69f7b57135693ca726123aa52cce061817765253d8f59b1644aae43e",
+      "stamped": "2026-11-24T15:13:31Z",
       "status": "pending"
     }
   ],
@@ -46,17 +64,28 @@
       "status": "anchored"
     },
     {
+      "anchored_checked": "2026-11-24T15:14:07Z",
+      "bitcoin_block": 977323,
       "file": "/proofs/DIR-2026-0003/578c17c0fa8e.md",
       "proof": "/proofs/DIR-2026-0003/578c17c0fa8e.md.ots",
       "sha256": "578c17c0fa8e1437d5dedb71ce1ec6dfb4c971b3d66c8f94b788a6914821cb09",
       "stamped": "2026-11-24T04:02:49Z",
-      "status": "pending"
+      "status": "anchored"
     },
     {
+      "anchored_checked": "2026-11-24T15:14:09Z",
+      "bitcoin_block": 977338,
       "file": "/proofs/DIR-2026-0003/c3aad103f634.md",
       "proof": "/proofs/DIR-2026-0003/c3aad103f634.md.ots",
       "sha256": "c3aad103f63427dabf633e2156217a973a479c8c72b06bf40674ab45900a9634",
       "stamped": "2026-11-24T04:21:54Z",
+      "status": "anchored"
+    },
+    {
+      "file": "/proofs/DIR-2026-0003/55b731150091.md",
+      "proof": "/proofs/DIR-2026-0003/55b731150091.md.ots",
+      "sha256": "55b731150091eabc2ab216e7a512df7fe97bb11d33ac6098f4eab4848f9b1226",
+      "stamped": "2026-11-24T15:13:33Z",
       "status": "pending"
     }
   ],
@@ -69,6 +98,13 @@
       "sha256": "22be6fb53d8bd239fa014d99b9b1f561b67c72f5b5065f99d7b3823ab539754d",
       "stamped": "2026-11-24T00:49:08Z",
       "status": "anchored"
+    },
+    {
+      "file": "/proofs/DIR-2026-0004/f7f80de82a00.md",
+      "proof": "/proofs/DIR-2026-0004/f7f80de82a00.md.ots",
+      "sha256": "f7f80de82a0051de9984669c174b0277ef764970453899b182e92f199e8afba2",
+      "stamped": "2026-11-24T15:13:34Z",
+      "status": "pending"
     }
   ],
   "DIR-2026-0005": [
@@ -82,17 +118,28 @@
       "status": "anchored"
     },
     {
+      "anchored_checked": "2026-11-24T15:14:17Z",
+      "bitcoin_block": 977323,
       "file": "/proofs/DIR-2026-0005/4d975db59cf2.md",
       "proof": "/proofs/DIR-2026-0005/4d975db59cf2.md.ots",
       "sha256": "4d975db59cf2a27040cce8ab42b7e33076ba38c93c11b72be7477944545bfde5",
       "stamped": "2026-11-24T04:02:50Z",
-      "status": "pending"
+      "status": "anchored"
     },
     {
+      "anchored_checked": "2026-11-24T15:14:19Z",
+      "bitcoin_block": 977323,
       "file": "/proofs/DIR-2026-0005/aa6d638ff0e2.md",
       "proof": "/proofs/DIR-2026-0005/aa6d638ff0e2.md.ots",
       "sha256": "aa6d638ff0e228b5a8a6c7d3ad2c6ecc7fa3c98c286394a2f8adda3395e568d3",
       "stamped": "2026-11-24T04:21:56Z",
+      "status": "anchored"
+    },
+    {
+      "file": "/proofs/DIR-2026-0005/9dcd8d566748.md",
+      "proof": "/proofs/DIR-2026-0005/9dcd8d566748.md.ots",
+      "sha256": "9dcd8d56674835e34f8e95f9f1e0b347b0f8a1a2acb57351e73d7d0e63402694",
+      "stamped": "2026-11-24T15:13:36Z",
       "status": "pending"
     }
   ],
@@ -107,10 +154,19 @@
       "status": "anchored"
     },
     {
+      "anchored_checked": "2026-11-24T15:14:24Z",
+      "bitcoin_block": 977338,
       "file": "/proofs/DIR-2026-0006/906373e0dd3e.md",
       "proof": "/proofs/DIR-2026-0006/906373e0dd3e.md.ots",
       "sha256": "906373e0dd3e77e043e235bbe19b678f3a0f7d623a6e749c9ee3457464d9ea32",
       "stamped": "2026-11-24T04:21:58Z",
+      "status": "anchored"
+    },
+    {
+      "file": "/proofs/DIR-2026-0006/f2cfaff224d2.md",
+      "proof": "/proofs/DIR-2026-0006/f2cfaff224d2.md.ots",
+      "sha256": "f2cfaff224d294d24911b8e2143d1d9605d78543a01f4d99d826dca053621e7e",
+      "stamped": "2026-11-24T15:13:38Z",
       "status": "pending"
     }
   ],
@@ -123,6 +179,13 @@
       "sha256": "4edc08deb5659ed83d5a2942468d976c13e8ff39099615a96e0a04a1f9ef8e9e",
       "stamped": "2026-11-24T00:49:14Z",
       "status": "anchored"
+    },
+    {
+      "file": "/proofs/DIR-2026-0007/6552b8fd30ae.md",
+      "proof": "/proofs/DIR-2026-0007/6552b8fd30ae.md.ots",
+      "sha256": "6552b8fd30ae6c2842758004c6b143066ade693aba46d0bbd660b1af2effadd2",
+      "stamped": "2026-11-24T15:13:40Z",
+      "status": "pending"
     }
   ],
   "DIR-2026-0008": [
@@ -136,17 +199,28 @@
       "status": "anchored"
     },
     {
+      "anchored_checked": "2026-11-24T15:14:32Z",
+      "bitcoin_block": 977332,
       "file": "/proofs/DIR-2026-0008/44009155c3e7.md",
       "proof": "/proofs/DIR-2026-0008/44009155c3e7.md.ots",
       "sha256": "44009155c3e788456423e73b94e25e51d605407441f8e6ffa26d17808ad1315f",
       "stamped": "2026-11-24T04:02:51Z",
-      "status": "pending"
+      "status": "anchored"
     },
     {
+      "anchored_checked": "2026-11-24T15:14:35Z",
+      "bitcoin_block": 977332,
       "file": "/proofs/DIR-2026-0008/fb84e0acb8a0.md",
       "proof": "/proofs/DIR-2026-0008/fb84e0acb8a0.md.ots",
       "sha256": "fb84e0acb8a07e5660f81786b1c8f81130c0bb10436c7a3ec65c0f6c56bbcdc1",
       "stamped": "2026-11-24T04:21:59Z",
+      "status": "anchored"
+    },
+    {
+      "file": "/proofs/DIR-2026-0008/ec77701318d4.md",
+      "proof": "/proofs/DIR-2026-0008/ec77701318d4.md.ots",
+      "sha256": "ec77701318d44077b304bc8a9deb96d89870d8f2e3f9eb0144ae7d9ccb2111c2",
+      "stamped": "2026-11-24T15:13:43Z",
       "status": "pending"
     }
   ],
@@ -161,10 +235,19 @@
       "status": "anchored"
     },
     {
+      "anchored_checked": "2026-11-24T15:14:40Z",
+      "bitcoin_block": 977338,
       "file": "/proofs/DIR-2026-0009/43a5097c752d.md",
       "proof": "/proofs/DIR-2026-0009/43a5097c752d.md.ots",
       "sha256": "43a5097c752d82d9a487512484ed879fe5773fde6f21d4218d19c5297493c644",
       "stamped": "2026-11-24T04:22:02Z",
+      "status": "anchored"
+    },
+    {
+      "file": "/proofs/DIR-2026-0009/028c650acea4.md",
+      "proof": "/proofs/DIR-2026-0009/028c650acea4.md.ots",
+      "sha256": "028c650acea4b54451c15609e69d91ad4410d023d8b8eb7ca15d3b80ddb5c326",
+      "stamped": "2026-11-24T15:13:45Z",
       "status": "pending"
     }
   ],
@@ -179,10 +262,19 @@
       "status": "anchored"
     },
     {
+      "anchored_checked": "2026-11-24T15:14:44Z",
+      "bitcoin_block": 977323,
       "file": "/proofs/DIR-2026-0010/297e1484fc26.md",
       "proof": "/proofs/DIR-2026-0010/297e1484fc26.md.ots",
       "sha256": "297e1484fc266b52f76dd24f0dfae30b652793774d328363de4ca4feea5f4bae",
       "stamped": "2026-11-24T04:22:04Z",
+      "status": "anchored"
+    },
+    {
+      "file": "/proofs/DIR-2026-0010/0d73c24f1d83.md",
+      "proof": "/proofs/DIR-2026-0010/0d73c24f1d83.md.ots",
+      "sha256": "0d73c24f1d8364c9d4910ab97495631077e74d57d5cd694355ddbae2ebbed3b1",
+      "stamped": "2026-11-24T15:13:47Z",
       "status": "pending"
     }
   ],
@@ -195,6 +287,13 @@
       "sha256": "e50f68973ffa8055b70cdf92085c6cdaf90fa54d100840bec3d8767b907d7df3",
       "stamped": "2026-11-24T00:49:23Z",
       "status": "anchored"
+    },
+    {
+      "file": "/proofs/DIR-2026-0011/84440532fb16.md",
+      "proof": "/proofs/DIR-2026-0011/84440532fb16.md.ots",
+      "sha256": "84440532fb16b6bd9ea1bf359aa7b04c2e04adf9e4cfa73fa6ed3009784badb2",
+      "stamped": "2026-11-24T15:13:49Z",
+      "status": "pending"
     }
   ],
   "DIR-2026-0012": [
@@ -206,6 +305,13 @@
       "sha256": "9de2288a42531d746dc32b2ccc9924b0d92866db20afd1b9b2211cf9c61348e0",
       "stamped": "2026-11-24T00:49:25Z",
       "status": "anchored"
+    },
+    {
+      "file": "/proofs/DIR-2026-0012/d11ab537902e.md",
+      "proof": "/proofs/DIR-2026-0012/d11ab537902e.md.ots",
+      "sha256": "d11ab537902e3e2d3c6c6db6fad618806309c9f117988f45c9dfc0eff82f909f",
+      "stamped": "2026-11-24T15:13:51Z",
+      "status": "pending"
     }
   ],
   "DIR-2026-0013": [
@@ -219,10 +325,19 @@
       "status": "anchored"
     },
     {
+      "anchored_checked": "2026-11-24T15:14:55Z",
+      "bitcoin_block": 977338,
       "file": "/proofs/DIR-2026-0013/91811b90e762.md",
       "proof": "/proofs/DIR-2026-0013/91811b90e762.md.ots",
       "sha256": "91811b90e762ad4ca86f6bc06f60337d86656d63406e9a43ff85acf0b41aaa4f",
       "stamped": "2026-11-24T04:02:52Z",
+      "status": "anchored"
+    },
+    {
+      "file": "/proofs/DIR-2026-0013/f0bf72cfd048.md",
+      "proof": "/proofs/DIR-2026-0013/f0bf72cfd048.md.ots",
+      "sha256": "f0bf72cfd04861bd9cd7ddffa87a0b2c60066f9989b30edd1802d1b6cba4dd5d",
+      "stamped": "2026-11-24T15:13:53Z",
       "status": "pending"
     }
   ]
