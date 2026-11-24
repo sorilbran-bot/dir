@@ -1,0 +1,188 @@
+---
+import Base from '../../layouts/Base.astro';
+import StartNote from '../../components/StartNote.astro';
+import { render } from 'astro:content';
+import { SITE } from '../../site.config';
+import { loadAll, fmtDate, isoDate, type Rec } from '../../lib/records';
+import fs from 'node:fs';
+import path from 'node:path';
+
+export async function getStaticPaths() {
+  const { recs } = await loadAll();
+  return recs.map((r) => ({ params: { slug: r.slug }, props: { slug: r.slug } }));
+}
+const { recs } = await loadAll();
+const r = recs.find((x) => x.slug === Astro.props.slug) as Rec;
+const d = r.d;
+const { Content } = await render(r.entry);
+const url = new URL(r.url, SITE.url).href;
+
+const bizIds = new Set(r.businesses.map((b) => b.id));
+const founders = r.businesses.flatMap((b) => b.data.founders);
+const lineage = recs
+  .filter((x) => x !== r && x.businesses.some((b) => bizIds.has(b.id)))
+  .sort((a, b) => a.iso.localeCompare(b.iso));
+const pulledBy = d.pulled_in_by ? recs.find((x) => x.d.record_id === d.pulled_in_by) : undefined;
+const ledBackTo = recs.filter((x) => x.d.pulled_in_by === d.record_id);
+
+// OpenTimestamps proofs, written by scripts/timestamp.py through the GitHub "Timestamp records" job.
+type Proof = { sha256: string; file: string; proof: string; stamped: string; status: 'pending' | 'anchored'; bitcoin_block?: number };
+let proofs: Proof[] = [];
+try {
+  const m = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'public', 'proofs', 'index.json'), 'utf8'));
+  proofs = ((m[d.record_id] ?? []) as Proof[]).slice().reverse(); // newest first; the script appends in order
+} catch {}
+const proof = proofs[0];
+// What the organization on the other side of a record is called, by record type.
+const ROLE: Record<string, string> = {
+  funding: 'Funding body',
+  cohort: 'Program organizer',
+  'selected-participation': 'Selecting organization',
+  award: 'Awarding body',
+  partnership: 'Partner organization',
+  growth: 'Client or partner',
+  launch: 'Organization',
+};
+const role = ROLE[r.type] ?? 'Organization';
+const SIDE: Record<string, string> = { founder: 'Business', org: role, 'third-party': 'Third party', 'public-trace': 'Public trace' };
+const VSIDES = [
+  { label: 'Business', v: d.verification.founder },
+  ...(r.counterparty ? [{ label: role, v: d.verification.counterparty }] : []),
+];
+const lastChange = d.corrections.length ? d.corrections.map((c) => c.date).sort((a, b) => +b - +a)[0] : d.published;
+
+// Structured data: what happened, between whom, with the sources as citations.
+const bizNode = (b: (typeof r.businesses)[number]) => {
+  const node: Record<string, unknown> = { '@type': 'Organization', name: b.data.name, url: b.data.website, sameAs: new URL(`/business/${b.id}/`, SITE.url).href };
+  const cp = r.counterparty ? { '@type': 'Organization', name: r.counterparty.data.name, url: r.counterparty.data.website } : undefined;
+  if (r.type === 'funding' && cp) node.funder = cp;
+  if (r.type === 'cohort' && cp) node.memberOf = { '@type': 'ProgramMembership', programName: d.program, hostingOrganization: cp };
+  if (b.data.founders.length) node.founder = b.data.founders.map((f) => ({ '@type': 'Person', name: f.name, ...(f.profile_consent && f.profile_url ? { url: f.profile_url } : {}) }));
+  return node;
+};
+const jsonld = {
+  '@context': 'https://schema.org',
+  '@type': 'CreativeWork',
+  '@id': url,
+  url,
+  name: d.title,
+  identifier: d.record_id,
+  genre: r.typeLabel,
+  temporalCoverage: r.iso,
+  datePublished: isoDate(d.published),
+  dateModified: isoDate(lastChange),
+  locationCreated: { '@type': 'Place', name: 'Detroit, Michigan' },
+  about: r.businesses.map(bizNode),
+  ...(r.counterparty ? { mentions: { '@type': 'Organization', name: r.counterparty.data.name, url: r.counterparty.data.website } } : {}),
+  citation: d.sources.map((s) => s.url),
+  isPartOf: { '@type': 'Dataset', name: SITE.name, url: SITE.url },
+  publisher: { '@type': 'Organization', name: SITE.publisher, url: SITE.publisherUrl },
+};
+---
+<Base title={`${d.record_id}: ${d.title}`} description={d.title} jsonld={jsonld}>
+  <article class="record">
+    <header class="pagehead">
+      <div class="wrap narrow">
+        <nav class="crumbs on-blue" aria-label="Breadcrumb"><a href="/records/">Records</a> / <a href={`/records/${r.type}/`}>{r.typeLabel}</a> / {d.record_id}</nav>
+        <div class="rec-tags">
+          <span class={`tag t-${r.type}`}>{r.typeLabel}</span>
+          {r.earlier && <span class="earlier-tag">Earlier record</span>}
+          {d.example && <span class="example-tag">Example · fictional</span>}
+        </div>
+        <h1 class="rec-title">{d.title}</h1>
+        <p class="rec-date">Happened <time datetime={r.iso}>{fmtDate(d.date)}</time></p>
+        <div class="rec-status">
+          <span class={`pill ${r.statusCls}`}>{r.statusLabel}</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="wrap narrow rec-body">
+      {r.earlier && (
+        <aside class="notice">
+          <b>Earlier record.</b> This happened before the record began on {fmtDate(new Date(SITE.recordStart))}. It's here as part of this founder's lineage.
+          {pulledBy && <> It's here because it's part of the story behind <a href={pulledBy.url}>{pulledBy.d.record_id}</a>.</>}
+        </aside>
+      )}
+      {d.client_record && (
+        <aside class="notice">
+          <b>Disclosure.</b> This record involves a client of the {SITE.publisher}. An independent reviewer checked it before it published.
+        </aside>
+      )}
+
+      <div class="blurb"><Content /></div>
+
+      <h2 class="sec">The details</h2>
+      <dl class="facts">
+        <div><dt>{r.type === 'launch' ? 'Launch date' : 'Event date'}</dt><dd>{fmtDate(d.date)}</dd></div>
+        <div><dt>{r.businesses.length > 1 ? 'Businesses' : 'Business'}</dt><dd>{r.businesses.map((b, i) => <>{i > 0 && ', '}<a href={`/business/${b.id}/`}>{b.data.name}</a></>)}</dd></div>
+        {founders.length > 0 && <div><dt>{founders.length > 1 ? 'Founders' : 'Founder'}</dt><dd>{founders.map((f, i) => <>{i > 0 && (i === founders.length - 1 ? ' and ' : ', ')}{f.profile_consent && f.profile_url ? <a href={f.profile_url}>{f.name}</a> : f.name}</>)}</dd></div>}
+        {r.counterparty && <div><dt>{role}</dt><dd><a href={`/org/${r.counterparty.id}/`}>{r.counterparty.data.name}</a></dd></div>}
+        {d.program && <div><dt>Program or event</dt><dd>{d.program}</dd></div>}
+        {r.type === 'funding' && <div><dt>Amount</dt><dd>{d.amount === 'undisclosed' ? 'Not made public' : d.amount}{d.funding_kind && ` (${d.funding_kind})`}</dd></div>}
+        <div><dt>Record ID</dt><dd class="mono">{d.record_id}</dd></div>
+        <div><dt>Published</dt><dd>{fmtDate(d.published)}</dd></div>
+      </dl>
+
+      <h2 class="sec">Sources</h2>
+      <ul class="sources">
+        {d.sources.map((s) => (
+          <li class={`src src-${s.side}`}>
+            <span class="label">{SIDE[s.side]}</span>
+            <a href={s.url} rel="noopener">{s.label}</a>
+            {s.archived && <a class="arch" href={s.archived} rel="noopener">Archived copy</a>}
+          </li>
+        ))}
+      </ul>
+
+      {proof && (
+        <>
+          <h2 class="sec">Timestamp</h2>
+          <p class="fine">DIR stamps a fingerprint of each version of this record with <a href="https://opentimestamps.org" rel="noopener">OpenTimestamps</a>. The fingerprint is anchored in the Bitcoin blockchain, so anyone can check that this record hasn't been changed or backdated since it was stamped. The stamp proves when DIR published this version. The sources above are the proof of the milestone itself.</p>
+          <dl class="facts compact">
+            <div><dt>Stamped</dt><dd><time datetime={proof.stamped}>{fmtDate(new Date(proof.stamped))}</time></dd></div>
+            <div><dt>Status</dt><dd>{proof.status === 'anchored' ? <>Anchored in Bitcoin block {proof.bitcoin_block}</> : 'Waiting for Bitcoin confirmation (usually a few hours)'}</dd></div>
+            <div><dt>Check it yourself</dt><dd><a href={proof.file}>Stamped copy</a> · <a href={proof.proof}>Proof file</a>. Upload both at opentimestamps.org.</dd></div>
+            {proofs.length > 1 && <div><dt>Earlier versions</dt><dd>{proofs.slice(1).map((p, i) => <>{i > 0 && ' · '}<a href={p.proof}>{fmtDate(new Date(p.stamped))}</a></>)}</dd></div>}
+          </dl>
+        </>
+      )}
+
+      <h2 class="sec">Verification</h2>
+      <dl class="facts compact verify">
+        {VSIDES.map(({ label, v }) => (
+          <div>
+            <dt>{label}</dt>
+            <dd>
+              {!v.public_url && !v.confirmed && 'Unconfirmed'}
+              {v.public_url && <>Public documentation exists: <a href={v.public_url} rel="noopener">{v.public_label ?? 'their own announcement'}</a></>}
+              {v.public_url && v.confirmed && <br />}
+              {v.confirmed && <>Directly confirmed{v.confirmed_by && <> ({v.confirmed_by})</>}, <time datetime={isoDate(v.confirmed)}>{fmtDate(v.confirmed)}</time></>}
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      {(lineage.length > 0 || ledBackTo.length > 0) && (
+        <>
+          <h2 class="sec">The rest of the story</h2>
+          <p class="fine">Other records for {r.businesses.map((b) => b.data.name).join(' and ')}, oldest first.</p>
+          <ol class="lineage">
+            {lineage.map((x) => (
+              <li><time datetime={x.iso}>{fmtDate(x.d.date)}</time> <span class={`tag sm t-${x.type}`}>{x.typeLabel}</span> <a href={x.url}>{x.d.title}</a>{x.earlier && <span class="earlier-tag sm">Earlier record</span>}</li>
+            ))}
+          </ol>
+        </>
+      )}
+
+      <h2 class="sec">Updates and corrections</h2>
+      {d.corrections.length ? (
+        <ul class="corrections">{d.corrections.map((c) => <li><time>{fmtDate(c.date)}</time> {c.note}</li>)}</ul>
+      ) : <p class="fine">None so far. If something here is wrong, <a href="/about/#contact">tell us</a> and we'll fix it and log the change here.</p>}
+
+      <h2 class="sec">Cite this record</h2>
+      <p class="cite mono">{SITE.name}, {d.record_id}, “{d.title}” Published {fmtDate(d.published)}. {url}</p>
+      <StartNote />
+    </div>
+  </article>
+</Base>
