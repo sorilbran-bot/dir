@@ -12,7 +12,7 @@ const { recs, bizs } = await loadAll();
 const b = bizs.find((x) => x.id === Astro.props.id)!;
 // Lineage reads as a story: oldest first.
 const story = recs.filter((r) => r.businesses.some((x) => x.id === b.id)).sort((a, c) => a.iso.localeCompare(c.iso));
-const CHECK = { 'state-registration': 'State business registration', 'county-dba': 'County DBA filing', 'city-license': 'City business license', 'program-address-proof': 'The proof of Detroit address a program required' };
+const CHECK = { 'state-registration': 'State business registration', 'county-dba': 'County DBA filing', 'city-license': 'City business license', 'program-address-proof': 'The proof of Detroit address a program required', 'business-address': 'A publicly documented Detroit business address' };
 const url = new URL(`/business/${b.id}/`, SITE.url).href;
 const jsonld = {
   '@context': 'https://schema.org',

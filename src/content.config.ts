@@ -66,7 +66,7 @@ const businesses = defineCollection({
         }),
       )
       .default([]),
-    detroit_check: z.enum(['state-registration', 'county-dba', 'city-license', 'program-address-proof']),
+    detroit_check: z.enum(['state-registration', 'county-dba', 'city-license', 'program-address-proof', 'business-address']), // business-address: a brick-and-mortar or operating address in Detroit, documented publicly
     example: z.boolean().default(false),
   }),
 });
