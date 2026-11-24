@@ -1,0 +1,26 @@
+---
+record_id: DIR-2025-0001
+title: Neumo received a $15,000 seed grant from the Detroit Startup Fund.
+type: funding
+date: 2025-12-01   # CONFIRM: Round 1 announcement date. Rename file to .md once fixed.
+published: 2026-11-19
+businesses: [neumo]
+counterparty: detroit-startup-fund
+program: Detroit Startup Fund, Round 1
+round: round-1
+status: one-side
+amount: "$15,000"
+funding_kind: grant
+pulled_in_by: DIR-2026-0003
+sources:
+  - side: org
+    label: Detroit Regional Chamber, Round 2 launch release listing Round 1 recipients
+    url: https://www.detroitchamber.com/?p=66399
+  - side: org
+    label: City of Detroit, Round 1 and Round 2 recipients sheet
+    url: https://detroitmi.gov/sites/detroitmi.localhost/files/2026-04/Round%202%20Grant%20Recipients%20-%20DSF_0.pdf
+verification:
+  founder: pending
+  counterparty: confirmed
+---
+Neumo was one of 10 seed grant recipients in the first round of the Detroit Startup Fund. It went on to win a $50,000 scale grant in Round 3.
