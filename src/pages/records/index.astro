@@ -19,7 +19,7 @@ const periods = [...new Set(live.map((r) => `${r.year}-${r.quarter}`))].map((k) 
     <div class="wrap">
       <span class="label on-blue">Browse</span>
       <h1>All records</h1>
-      <p class="lede">Filter by type, time and documentation status. Newest first, by the date it happened.</p>
+      <p class="lede">Filter by type, time and documentation status. Newest first, by event date.</p>
     </div>
   </section>
 
@@ -118,8 +118,8 @@ const periods = [...new Set(live.map((r) => `${r.year}-${r.quarter}`))].map((k) 
     if (r && r[0] < recordStart) {
       note.hidden = false;
       note.textContent = r[1] < recordStart
-        ? 'This whole period is before the record began, so nothing here is counted.'
-        : 'Part of this period is before the record began on November 1, 2026. Only milestones from that date on are counted.';
+        ? 'The record began ' + recordStart + '. This period is before that.'
+        : 'The record began ' + recordStart + ', partway through this period.';
     } else note.hidden = true;
     if (push) {
       var u = new URLSearchParams();

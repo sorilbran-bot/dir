@@ -6,7 +6,7 @@ const rules = [
   ['Nothing is paid, ever.', 'No fees, sponsorships, ads or placement. No one can pay to get in or to rank higher.'],
   ['Facts only.', 'Amount, program, date and named parties. No adjectives, rankings or judgments.'],
   ['Every fact links to its source.', 'Links sit on the fact itself, and we save an archived copy in case the original disappears.'],
-  ['Founders can ask to be removed.', 'We remove a founder within five business days of the request.'],
+  ['Founders can ask to hide or remove a record.', 'We act on the request within five business days.'],
   ['Corrections stay visible.', 'When a fact changes, we fix it and log the change on the record.'],
   ['Conflicts are disclosed.', 'Any record involving a client of the Lab says so, and gets an independent review before it publishes.'],
 ];
@@ -15,7 +15,7 @@ const types = [
   ['Selected participation', 'Chosen by a host to pitch, speak, present or demo', 'attending, buying a vendor table'],
   ['Funding', 'A grant, investment, loan or prize from a named source', '“raising a round,” unnamed investors'],
   ['Launch', 'A product, service, release or location that went to market', 'coming soon, private previews, demos'],
-  ['Award or recognition', 'A named honor from a named body', 'awards you pay for, self-nominated lists'],
+  ['Award or recognition', 'A named honor from a named body', 'awards you pay for, self-nominations with no one else deciding'],
   ['Partnership', 'A formal agreement with a named organization', 'vague “collaborating with” posts'],
   ['Growth', 'A contract or expansion with a named counterparty', 'hires, revenue figures, follower counts'],
 ];
@@ -64,7 +64,7 @@ const types = [
       <div class="head">
         <span class="label">What goes in</span>
         <h2>Seven kinds of milestones. If it qualifies, it goes in.</h2>
-        <p>The business must be in the City of Detroit, confirmed by a registered or licensed address. The milestone must have already happened, on or after November 1, 2026. Nobody decides whether it is impressive enough.</p>
+        <p>The milestone must have already happened, and someone other than the business must have made the call: a funder, a program, a host or a judge. Self-nomination lists are fine when a separate body decides who's chosen. A self-nomination alone is never a win. Nobody decides whether a milestone is impressive enough.</p>
       </div>
       <ul class="types">
         {types.map(([n, y, no]) => <li><b>{n}</b><span>{y}</span><span class="no">{no}</span></li>)}
@@ -76,8 +76,8 @@ const types = [
     <div class="wrap">
       <div class="head">
         <span class="label">Earlier records</span>
-        <h2>We go back in time along a founder's story, not across the calendar.</h2>
-        <p>Nothing before November 1, 2026 is counted. When a current record leads back to an earlier milestone, like the cohort a funded founder came out of, we add it as an "Earlier record" so the story is complete. Earlier records never appear in totals or time filters.</p>
+        <h2>We track a founder's lineage of innovation in the Detroit ecosystem.</h2>
+        <p>The record began November 1, 2026. When a new record leads back to an earlier milestone, like the cohort a funded founder came out of, we add it as an "Earlier record" so the founder's story stays connected.</p>
       </div>
     </div>
   </section>
@@ -98,24 +98,22 @@ const types = [
     <div class="wrap">
       <div class="head">
         <span class="label">If we contacted you</span>
-        <h2>You're here because something you did is going on the record.</h2>
+        <h2>You're here because one of your wins has entered Detroit's innovation record.</h2>
         <p>There is nothing to buy and nothing to sign. Here is what our message means.</p>
       </div>
       <div class="split">
         <div class="card">
           <h3>Founders</h3>
-          <p>We found a public post about your milestone and we're logging it. We'll ask four quick questions:</p>
+          <p>We found a public announcement of your milestone and logged it. There's nothing you have to do. Two things help:</p>
           <ol>
-            <li>Are these facts right?</li>
-            <li>Which page should we link to for your business?</li>
-            <li>Would you like to add a quote?</li>
-            <li>Can we use this photo?</li>
+            <li>If anything in your record is wrong, reply and we'll fix it.</li>
+            <li>If you post about the milestone, tag us or send the link to <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>. Your post becomes a source on your record.</li>
           </ol>
-          <p class="note">If we don't hear back within 10 days, we may publish using only facts that are already public, and the record will show that you didn't reply. If you'd rather not be included, tell us and we'll leave you out.</p>
+          <p class="note">If we don't hear back within 10 days, we may publish using only facts that are already public, and the record will show as One side documented. You may also ask that this milestone be hidden from the public record, or removed from the Detroit Innovation Record altogether.</p>
         </div>
         <div class="card">
           <h3>Programs, funders and event hosts</h3>
-          <p>We're logging a milestone involving your organization and one of your founders. We'll ask you to confirm the facts and tell us which page to link.</p>
+          <p>We're logging a milestone involving your organization and one of your founders. If you've already announced it, there's nothing to do. We link to your announcement. If you haven't, we may ask you to confirm the facts.</p>
           <ul>
             <li>We can document your events: roster, who was selected, and photos.</li>
             <li>Afterward we send a factual recap, written in your voice, for you to publish if you'd like.</li>

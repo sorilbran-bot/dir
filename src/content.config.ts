@@ -1,7 +1,19 @@
 import { defineCollection, reference, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
-const verification = z.enum(['confirmed', 'pending', 'no-reply', 'not-applicable']).default('pending');
+// How each party's side of a record is verified. Both can be true at once.
+//   public_url: the party's own channel (website, own post) where the milestone is published -> "Public documentation exists"
+//   confirmed:  date the party confirmed it directly to DIR -> "Directly confirmed"
+// Neither -> "Unconfirmed". Older plain-text values ('pending', 'confirmed', ...) are read as empty.
+const verification = z.preprocess(
+  (v) => (typeof v === 'string' || v == null ? {} : v),
+  z.object({
+    public_url: z.string().url().optional(),
+    public_label: z.string().optional(),
+    confirmed: z.coerce.date().optional(),
+    confirmed_by: z.string().optional(), // optional name and title, e.g. "Jane Doe, Program Director"
+  }),
+);
 
 const records = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/records' }),
@@ -21,7 +33,7 @@ const records = defineCollection({
     sources: z
       .array(
         z.object({
-          side: z.enum(['org', 'founder', 'public-trace']),
+          side: z.enum(['org', 'founder', 'third-party', 'public-trace']),
           label: z.string(),
           url: z.string().url(),
           archived: z.string().url().optional(),
@@ -30,7 +42,7 @@ const records = defineCollection({
       .min(1),
     verification: z
       .object({ founder: verification, counterparty: verification })
-      .default({ founder: 'pending', counterparty: 'pending' }),
+      .default({ founder: {}, counterparty: {} }),
     pulled_in_by: z.string().optional(), // earlier records only: the current record that led back to it
     client_record: z.boolean().default(false),
     corrections: z.array(z.object({ date: z.coerce.date(), note: z.string() })).default([]),

@@ -4,6 +4,8 @@ import StartNote from '../../components/StartNote.astro';
 import { render } from 'astro:content';
 import { SITE } from '../../site.config';
 import { loadAll, fmtDate, isoDate, type Rec } from '../../lib/records';
+import fs from 'node:fs';
+import path from 'node:path';
 
 export async function getStaticPaths() {
   const { recs } = await loadAll();
@@ -22,8 +24,30 @@ const lineage = recs
 const pulledBy = d.pulled_in_by ? recs.find((x) => x.d.record_id === d.pulled_in_by) : undefined;
 const ledBackTo = recs.filter((x) => x.d.pulled_in_by === d.record_id);
 
-const SIDE = { org: 'Organization side', founder: 'Founder side', 'public-trace': 'Public trace' } as const;
-const VER = { confirmed: 'Confirmed', pending: 'Waiting to hear back', 'no-reply': 'Did not reply', 'not-applicable': '' } as const;
+// OpenTimestamps proofs, written by scripts/timestamp.py through the GitHub "Timestamp records" job.
+type Proof = { sha256: string; file: string; proof: string; stamped: string; status: 'pending' | 'anchored'; bitcoin_block?: number };
+let proofs: Proof[] = [];
+try {
+  const m = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'public', 'proofs', 'index.json'), 'utf8'));
+  proofs = ((m[d.record_id] ?? []) as Proof[]).slice().reverse(); // newest first; the script appends in order
+} catch {}
+const proof = proofs[0];
+// What the organization on the other side of a record is called, by record type.
+const ROLE: Record<string, string> = {
+  funding: 'Funding body',
+  cohort: 'Program organizer',
+  'selected-participation': 'Selecting organization',
+  award: 'Awarding body',
+  partnership: 'Partner organization',
+  growth: 'Client or partner',
+  launch: 'Organization',
+};
+const role = ROLE[r.type] ?? 'Organization';
+const SIDE: Record<string, string> = { founder: 'Business', org: role, 'third-party': 'Third party', 'public-trace': 'Public trace' };
+const VSIDES = [
+  { label: 'Business', v: d.verification.founder },
+  ...(r.counterparty ? [{ label: role, v: d.verification.counterparty }] : []),
+];
 const lastChange = d.corrections.length ? d.corrections.map((c) => c.date).sort((a, b) => +b - +a)[0] : d.published;
 
 // Structured data: what happened, between whom, with the sources as citations.
@@ -75,7 +99,7 @@ const jsonld = {
     <div class="wrap narrow rec-body">
       {r.earlier && (
         <aside class="notice">
-          <b>Earlier record.</b> This happened before the record began on {fmtDate(new Date(SITE.recordStart))}, so it isn't counted in any totals or time filters.
+          <b>Earlier record.</b> This happened before the record began on {fmtDate(new Date(SITE.recordStart))}. It's here as part of this founder's lineage.
           {pulledBy && <> It's here because it's part of the story behind <a href={pulledBy.url}>{pulledBy.d.record_id}</a>.</>}
         </aside>
       )}
@@ -89,18 +113,16 @@ const jsonld = {
 
       <h2 class="sec">The details</h2>
       <dl class="facts">
-        <div><dt>Date it happened</dt><dd>{fmtDate(d.date)}</dd></div>
+        <div><dt>{r.type === 'launch' ? 'Launch date' : 'Event date'}</dt><dd>{fmtDate(d.date)}</dd></div>
         <div><dt>{r.businesses.length > 1 ? 'Businesses' : 'Business'}</dt><dd>{r.businesses.map((b, i) => <>{i > 0 && ', '}<a href={`/business/${b.id}/`}>{b.data.name}</a></>)}</dd></div>
-        {r.counterparty && <div><dt>Other party</dt><dd><a href={`/org/${r.counterparty.id}/`}>{r.counterparty.data.name}</a></dd></div>}
+        {r.counterparty && <div><dt>{role}</dt><dd><a href={`/org/${r.counterparty.id}/`}>{r.counterparty.data.name}</a></dd></div>}
         {d.program && <div><dt>Program or event</dt><dd>{d.program}</dd></div>}
         {r.type === 'funding' && <div><dt>Amount</dt><dd>{d.amount === 'undisclosed' ? 'Not made public' : d.amount}{d.funding_kind && ` (${d.funding_kind})`}</dd></div>}
-        <div><dt>In Detroit</dt><dd>Address checked against {r.businesses.map((b) => ({ 'state-registration': 'state business registration', 'county-dba': 'county DBA filing', 'city-license': 'city business license', 'program-address-proof': 'the proof of Detroit address the program required' })[b.data.detroit_check]).filter((v, i, a) => a.indexOf(v) === i).join(' and ')}</dd></div>
         <div><dt>Record ID</dt><dd class="mono">{d.record_id}</dd></div>
         <div><dt>Published</dt><dd>{fmtDate(d.published)}</dd></div>
       </dl>
 
       <h2 class="sec">Sources</h2>
-      <p class="fine">DIR is never the only proof. Every record points to what the parties published themselves.</p>
       <ul class="sources">
         {d.sources.map((s) => (
           <li class={`src src-${s.side}`}>
@@ -111,15 +133,33 @@ const jsonld = {
         ))}
       </ul>
 
-      {(VER[d.verification.founder] || VER[d.verification.counterparty]) && (
+      {proof && (
         <>
-          <h2 class="sec">Checked with</h2>
+          <h2 class="sec">Timestamp</h2>
+          <p class="fine">DIR stamps a fingerprint of each version of this record with <a href="https://opentimestamps.org" rel="noopener">OpenTimestamps</a>. The fingerprint is anchored in the Bitcoin blockchain, so anyone can check that this record hasn't been changed or backdated since it was stamped. The stamp proves when DIR published this version. The sources above are the proof of the milestone itself.</p>
           <dl class="facts compact">
-            {VER[d.verification.founder] && <div><dt>The business</dt><dd>{VER[d.verification.founder]}</dd></div>}
-            {VER[d.verification.counterparty] && <div><dt>The other party</dt><dd>{VER[d.verification.counterparty]}</dd></div>}
+            <div><dt>Stamped</dt><dd><time datetime={proof.stamped}>{fmtDate(new Date(proof.stamped))}</time></dd></div>
+            <div><dt>Status</dt><dd>{proof.status === 'anchored' ? <>Anchored in Bitcoin block {proof.bitcoin_block}</> : 'Waiting for Bitcoin confirmation (usually a few hours)'}</dd></div>
+            <div><dt>Check it yourself</dt><dd><a href={proof.file}>Stamped copy</a> · <a href={proof.proof}>Proof file</a>. Upload both at opentimestamps.org.</dd></div>
+            {proofs.length > 1 && <div><dt>Earlier versions</dt><dd>{proofs.slice(1).map((p, i) => <>{i > 0 && ' · '}<a href={p.proof}>{fmtDate(new Date(p.stamped))}</a></>)}</dd></div>}
           </dl>
         </>
       )}
+
+      <h2 class="sec">Verification</h2>
+      <dl class="facts compact verify">
+        {VSIDES.map(({ label, v }) => (
+          <div>
+            <dt>{label}</dt>
+            <dd>
+              {!v.public_url && !v.confirmed && 'Unconfirmed'}
+              {v.public_url && <>Public documentation exists: <a href={v.public_url} rel="noopener">{v.public_label ?? 'their own announcement'}</a></>}
+              {v.public_url && v.confirmed && <br />}
+              {v.confirmed && <>Directly confirmed{v.confirmed_by && <> ({v.confirmed_by})</>}, <time datetime={isoDate(v.confirmed)}>{fmtDate(v.confirmed)}</time></>}
+            </dd>
+          </div>
+        ))}
+      </dl>
 
       {(lineage.length > 0 || ledBackTo.length > 0) && (
         <>
@@ -133,7 +173,7 @@ const jsonld = {
         </>
       )}
 
-      <h2 class="sec">Corrections</h2>
+      <h2 class="sec">Updates and corrections</h2>
       {d.corrections.length ? (
         <ul class="corrections">{d.corrections.map((c) => <li><time>{fmtDate(c.date)}</time> {c.note}</li>)}</ul>
       ) : <p class="fine">None so far. If something here is wrong, <a href="/about/#contact">tell us</a> and we'll fix it and log the change here.</p>}

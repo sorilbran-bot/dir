@@ -43,8 +43,7 @@ const jsonld = {
     <div class="wrap narrow">
       <dl class="facts compact">
         {b.data.website && <div><dt>Website</dt><dd><a href={b.data.website} rel="noopener">{b.data.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a></dd></div>}
-        <div><dt>In Detroit</dt><dd>Checked against {CHECK[b.data.detroit_check].toLowerCase()}</dd></div>
-        <div><dt>On the record</dt><dd>{story.filter((r) => !r.earlier).length} counted, {story.filter((r) => r.earlier).length} earlier</dd></div>
+        <div><dt>On the record</dt><dd>{story.filter((r) => !r.earlier).length} {story.filter((r) => !r.earlier).length === 1 ? 'record' : 'records'}{story.some((r) => r.earlier) && <>, plus {story.filter((r) => r.earlier).length} earlier</>}</dd></div>
       </dl>
       <h2 class="sec">The story so far</h2>
       <p class="fine">Every record that names {b.data.name}, oldest first.</p>
