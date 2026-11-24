@@ -1,0 +1,63 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { loadAll, fmtDate, type Rec } from '../../../lib/records';
+import fs from 'node:fs';
+import path from 'node:path';
+
+export async function getStaticPaths() {
+  const { recs } = await loadAll();
+  return recs.map((r) => ({ params: { slug: r.slug }, props: { slug: r.slug } }));
+}
+const { recs } = await loadAll();
+const r = recs.find((x) => x.slug === Astro.props.slug) as Rec;
+const d = r.d;
+
+type Proof = { sha256: string; file: string; proof: string; stamped: string; status: 'pending' | 'anchored'; bitcoin_block?: number };
+let proofs: Proof[] = [];
+try {
+  const m = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'public', 'proofs', 'index.json'), 'utf8'));
+  proofs = ((m[d.record_id] ?? []) as Proof[]).slice().reverse();
+} catch {}
+const status = (p: Proof) => (p.status === 'anchored' ? `Confirmed in Bitcoin block ${p.bitcoin_block?.toLocaleString("en-US")}` : 'Confirming (usually a few hours)');
+---
+<Base title={`Timestamp for ${d.record_id}`} description={`How to check that ${d.record_id} hasn't been changed or backdated.`}>
+  <article class="record">
+    <header class="pagehead">
+      <div class="wrap narrow">
+        <nav class="crumbs on-blue" aria-label="Breadcrumb"><a href={r.url}>{d.record_id}</a> / Timestamp</nav>
+        <h1>Check this record yourself</h1>
+        <p class="lede">{d.title}</p>
+      </div>
+    </header>
+    <div class="wrap narrow rec-body">
+      <p>Every version of a DIR record gets a digital fingerprint, and that fingerprint is anchored in the Bitcoin blockchain with <a href="https://opentimestamps.org" target="_blank" rel="noopener">OpenTimestamps</a>. Nobody controls that, including DIR. Once a stamp is confirmed, anyone can check that this exact version of the record existed by the time it was anchored, and hasn't been changed since.</p>
+      <p class="fine">The timestamp is separate from the record's published date. It proves this version existed by a certain time. The sources on the record are the proof of the milestone itself.</p>
+
+      {proofs.length === 0 ? <p>This record hasn't been timestamped yet.</p> : (
+        <>
+          <h2 class="sec">Versions</h2>
+          <dl class="facts compact">
+            {proofs.map((p, i) => (
+              <div>
+                <dt>{i === 0 ? 'Current version' : 'Earlier version'}</dt>
+                <dd>
+                  Stamped <time datetime={p.stamped}>{fmtDate(new Date(p.stamped))}</time><br />
+                  {status(p)}<br />
+                  <a href={p.file} target="_blank" rel="noopener">Stamped copy</a> · <a href={p.proof} download>Proof file</a>
+                </dd>
+              </div>
+            ))}
+          </dl>
+
+          <h2 class="sec">How to check it</h2>
+          <ol>
+            <li>Download the stamped copy and the proof file for the version you want to check.</li>
+            <li>Go to <a href="https://opentimestamps.org" target="_blank" rel="noopener">opentimestamps.org</a>.</li>
+            <li>Drop in the proof file, then the stamped copy. Once the stamp is confirmed, it tells you when the fingerprint was anchored.</li>
+          </ol>
+        </>
+      )}
+      <p><a href={r.url}>Back to {d.record_id}</a></p>
+    </div>
+  </article>
+</Base>

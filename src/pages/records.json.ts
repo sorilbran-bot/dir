@@ -6,6 +6,7 @@ import { loadAll, isoDate } from '../lib/records';
 export const GET: APIRoute = async () => {
   const { recs } = await loadAll();
   const body = {
+    '@id': `${SITE.url}/#dataset`,
     name: SITE.name,
     publisher: SITE.publisher,
     url: SITE.url,
@@ -25,6 +26,11 @@ export const GET: APIRoute = async () => {
       counterparty: r.counterparty ? { name: r.counterparty.data.name, url: new URL(`/org/${r.counterparty.id}/`, SITE.url).href } : null,
       program: r.d.program ?? null,
       amount: r.type === 'funding' ? r.d.amount : null,
+      amount_value: r.type === 'funding' && /\d/.test(r.d.amount) ? Number(r.d.amount.replace(/[^\d.]/g, '')) : null,
+      currency: r.type === 'funding' && r.d.amount.trim().startsWith('$') ? 'USD' : null,
+      funding_kind: r.d.funding_kind ?? null,
+      tier: r.d.tier ?? null,
+      round: r.d.round ?? null,
       sources: r.d.sources.map((s) => ({ side: s.side, label: s.label, url: s.url, archived: s.archived ?? null })),
       client_record: r.d.client_record,
       corrections: r.d.corrections.map((c) => ({ date: isoDate(c.date), note: c.note })),

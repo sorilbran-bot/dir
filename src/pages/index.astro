@@ -16,28 +16,27 @@ const orgsWithRecords = orgs
   .filter((o) => live.some((r) => r.counterparty?.id === o.id))
   .sort((a, b) => a.data.name.localeCompare(b.data.name));
 const tallyData = live.map((r) => [r.iso, r.type]);
-const WORDS: Record<string, [string, string]> = { launch: ['launch', 'launches'], cohort: ['cohort', 'cohorts'], funding: ['funding record', 'funding records'] };
-const word = (t: string, n: number) => WORDS[t][n === 1 ? 0 : 1];
-const pilotLabels = WORDS;
+const pilotLabels = Object.fromEntries(PILOT_TYPES.map((t) => [t, TYPES[t].plural]));
 
 const jsonld = {
   '@context': 'https://schema.org',
   '@type': 'Dataset',
+  '@id': `${SITE.url}/#dataset`,
   name: SITE.name,
   description: SITE.description,
   url: SITE.url,
   temporalCoverage: `${SITE.recordStart}/..`,
   spatialCoverage: { '@type': 'Place', name: 'Detroit, Michigan' },
   isAccessibleForFree: true,
-  publisher: { '@type': 'Organization', name: SITE.publisher, url: SITE.publisherUrl, founder: { '@type': 'Person', name: SITE.founder } },
+  publisher: { '@type': 'Organization', '@id': 'https://detroitmediainnovation.com/#dmil', name: SITE.publisher, url: SITE.publisherUrl, founder: { '@type': 'Person', name: SITE.founder } },
   distribution: { '@type': 'DataDownload', encodingFormat: 'application/json', contentUrl: `${SITE.url}/records.json` },
 };
 ---
 <Base jsonld={jsonld}>
   <section class="hero">
     <div class="wrap hero-inner">
-      <h1>Detroit’s innovation, <em>on the record.</em></h1>
-      <p class="lede">A public, machine-readable record of what Detroit founders build, so the innovation never gets too far from the hands that built it.</p>
+      <h1>Detroit's innovation, <em>on the record.</em></h1>
+      <p class="lede">Dated, sourced milestones from Detroit founders and businesses: who launched, who got selected, who got funded, and by whom.</p>
       <form class="search" action="/records/" method="get" role="search">
         <label for="q" class="sr">Search records</label>
         <input id="q" name="q" type="search" placeholder="Search a business, founder or organization" autocomplete="off" />
@@ -90,7 +89,7 @@ const jsonld = {
         <h2 id="tally-q">Q{quarterOf(now)} {year}</h2>
       </div>
       <ul class="tally" id="tally" data-records={JSON.stringify(tallyData)} data-labels={JSON.stringify(pilotLabels)}>
-        {PILOT_TYPES.map((t) => { const n = live.filter((r) => r.type === t && r.year === year && r.quarter === quarterOf(now)).length; return <li><b>{n}</b> {word(t, n)}</li>; })}
+        {PILOT_TYPES.map((t) => <li><b>{live.filter((r) => r.type === t && r.year === year && r.quarter === quarterOf(now)).length}</b> {TYPES[t].plural.toLowerCase()}</li>)}
       </ul>
       <a class="btn" href="/records/?period=this-q">See this quarter</a>
     </div>
@@ -130,7 +129,7 @@ const jsonld = {
     });
     document.getElementById('tally-q').textContent = 'Q' + q + ' ' + y;
     el.innerHTML = Object.keys(labels).map(function (t) {
-      return '<li><b>' + counts[t] + '</b> ' + labels[t][counts[t] === 1 ? 0 : 1] + '</li>';
+      return '<li><b>' + counts[t] + '</b> ' + labels[t].toLowerCase() + '</li>';
     }).join('');
   } catch (e) {}
 })();

@@ -30,6 +30,7 @@ const records = defineCollection({
     status: z.enum(['both-sides', 'one-side', 'launch-verified']),
     amount: z.string().default('undisclosed'), // funding only, e.g. "$250,000"
     funding_kind: z.enum(['grant', 'investment', 'loan', 'prize']).optional(),
+    tier: z.string().optional(), // the program's own name for the level, e.g. seed or scale
     sources: z
       .array(
         z.object({

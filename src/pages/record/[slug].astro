@@ -18,6 +18,7 @@ const { Content } = await render(r.entry);
 const url = new URL(r.url, SITE.url).href;
 
 const bizIds = new Set(r.businesses.map((b) => b.id));
+const founders = r.businesses.flatMap((b) => b.data.founders);
 const lineage = recs
   .filter((x) => x !== r && x.businesses.some((b) => bizIds.has(b.id)))
   .sort((a, b) => a.iso.localeCompare(b.iso));
@@ -115,6 +116,7 @@ const jsonld = {
       <dl class="facts">
         <div><dt>{r.type === 'launch' ? 'Launch date' : 'Event date'}</dt><dd>{fmtDate(d.date)}</dd></div>
         <div><dt>{r.businesses.length > 1 ? 'Businesses' : 'Business'}</dt><dd>{r.businesses.map((b, i) => <>{i > 0 && ', '}<a href={`/business/${b.id}/`}>{b.data.name}</a></>)}</dd></div>
+        {founders.length > 0 && <div><dt>{founders.length > 1 ? 'Founders' : 'Founder'}</dt><dd>{founders.map((f, i) => <>{i > 0 && (i === founders.length - 1 ? ' and ' : ', ')}{f.profile_consent && f.profile_url ? <a href={f.profile_url}>{f.name}</a> : f.name}</>)}</dd></div>}
         {r.counterparty && <div><dt>{role}</dt><dd><a href={`/org/${r.counterparty.id}/`}>{r.counterparty.data.name}</a></dd></div>}
         {d.program && <div><dt>Program or event</dt><dd>{d.program}</dd></div>}
         {r.type === 'funding' && <div><dt>Amount</dt><dd>{d.amount === 'undisclosed' ? 'Not made public' : d.amount}{d.funding_kind && ` (${d.funding_kind})`}</dd></div>}
@@ -127,24 +129,11 @@ const jsonld = {
         {d.sources.map((s) => (
           <li class={`src src-${s.side}`}>
             <span class="label">{SIDE[s.side]}</span>
-            <a href={s.url} rel="noopener">{s.label}</a>
-            {s.archived && <a class="arch" href={s.archived} rel="noopener">Archived copy</a>}
+            <a href={s.url} target="_blank" rel="noopener">{s.label}</a>
+            {s.archived && <a class="arch" href={s.archived} target="_blank" rel="noopener">Archived copy</a>}
           </li>
         ))}
       </ul>
-
-      {proof && (
-        <>
-          <h2 class="sec">Timestamp</h2>
-          <p class="fine">DIR stamps a fingerprint of each version of this record with <a href="https://opentimestamps.org" rel="noopener">OpenTimestamps</a>. The fingerprint is anchored in the Bitcoin blockchain, so anyone can check that this record hasn't been changed or backdated since it was stamped. The stamp proves when DIR published this version. The sources above are the proof of the milestone itself.</p>
-          <dl class="facts compact">
-            <div><dt>Stamped</dt><dd><time datetime={proof.stamped}>{fmtDate(new Date(proof.stamped))}</time></dd></div>
-            <div><dt>Status</dt><dd>{proof.status === 'anchored' ? <>Anchored in Bitcoin block {proof.bitcoin_block}</> : 'Waiting for Bitcoin confirmation (usually a few hours)'}</dd></div>
-            <div><dt>Check it yourself</dt><dd><a href={proof.file}>Stamped copy</a> · <a href={proof.proof}>Proof file</a>. Upload both at opentimestamps.org.</dd></div>
-            {proofs.length > 1 && <div><dt>Earlier versions</dt><dd>{proofs.slice(1).map((p, i) => <>{i > 0 && ' · '}<a href={p.proof}>{fmtDate(new Date(p.stamped))}</a></>)}</dd></div>}
-          </dl>
-        </>
-      )}
 
       <h2 class="sec">Verification</h2>
       <dl class="facts compact verify">
@@ -153,7 +142,7 @@ const jsonld = {
             <dt>{label}</dt>
             <dd>
               {!v.public_url && !v.confirmed && 'Unconfirmed'}
-              {v.public_url && <>Public documentation exists: <a href={v.public_url} rel="noopener">{v.public_label ?? 'their own announcement'}</a></>}
+              {v.public_url && <>Public documentation exists: <a href={v.public_url} target="_blank" rel="noopener">{v.public_label ?? 'their own announcement'}</a></>}
               {v.public_url && v.confirmed && <br />}
               {v.confirmed && <>Directly confirmed{v.confirmed_by && <> ({v.confirmed_by})</>}, <time datetime={isoDate(v.confirmed)}>{fmtDate(v.confirmed)}</time></>}
             </dd>
@@ -180,6 +169,7 @@ const jsonld = {
 
       <h2 class="sec">Cite this record</h2>
       <p class="cite mono">{SITE.name}, {d.record_id}, “{d.title}” Published {fmtDate(d.published)}. {url}</p>
+      {proof && <p class="fine stamp-line">Timestamped <time datetime={proof.stamped}>{fmtDate(new Date(proof.stamped))}</time>. <a href={`/record/${r.slug}/timestamp/`} target="_blank" rel="noopener">Check it yourself</a></p>}
       <StartNote />
     </div>
   </article>
