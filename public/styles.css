@@ -212,3 +212,17 @@ footer a { color: var(--blue-ink); }
   .tile-n { font-size: 44px; }
 }
 .pagehead .pill.one { background: #fff; border-color: #fff; color: #A84A06; }
+
+/* Phone header: one compact brand line, nav as a single swipeable row */
+.mast nav .sm { display: none; }
+@media (max-width: 640px) {
+  .mast .wrap { padding-block: 10px 0; gap: 2px; }
+  .brand { gap: 8px; }
+  .brand b { font-size: 22px; }
+  .brand span { font-size: 13px; }
+  .mast nav { width: 100%; flex-wrap: nowrap; overflow-x: auto; gap: 16px; font-size: 14px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .mast nav::-webkit-scrollbar { display: none; }
+  .mast nav a { white-space: nowrap; padding-block: 10px; }
+  .mast nav .lg { display: none; }
+  .mast nav .sm { display: inline; }
+}

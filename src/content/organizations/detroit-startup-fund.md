@@ -1,9 +1,9 @@
 ---
 slug: detroit-startup-fund
 name: Detroit Startup Fund
-kind: program
+kind: funder
 website: https://detroitmi.gov/startup
-summary: A City of Detroit grant program for Detroit-based tech startups. It gives $15,000 seed grants and $50,000 scale grants and is paid for from the City's general fund.
+summary: A City of Detroit grant fund for Detroit-based tech startups. It gives $15,000 seed grants and $50,000 scale grants and is paid for from the City's general fund.
 run_by:
   - City of Detroit
   - Detroit Economic Growth Corporation (DEGC)
@@ -26,6 +26,7 @@ criteria:
 rounds:
   - slug: round-1
     label: Round 1
+    format: grant-round
     opens: 2025-07-28
     closes: 2025-08-25
     awards: 10 seed grants of $15,000 and 3 scale grants of $50,000
@@ -33,6 +34,7 @@ rounds:
     announcement_url: https://detroitmi.gov/node/97831
   - slug: round-2
     label: Round 2
+    format: grant-round
     opens: 2026-02-02
     closes: 2026-03-02
     announced: 2026-03-25
@@ -40,6 +42,7 @@ rounds:
     announcement_url: https://www.degc.org/post/mayor-degc-present-300-000-in-grants-to-13-innovative-startups-through-detroit-startup-fund
   - slug: round-3
     label: Round 3
+    format: grant-round
     opens: 2026-08-31
     closes: 2026-10-05
     announced: 2026-11-16

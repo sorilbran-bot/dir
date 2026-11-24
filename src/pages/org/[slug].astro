@@ -2,8 +2,10 @@
 import Base from '../../layouts/Base.astro';
 import RecordCard from '../../components/RecordCard.astro';
 import StartNote from '../../components/StartNote.astro';
+import Criteria from '../../components/Criteria.astro';
+import { FORMAT, KIND } from '../../lib/formats';
 import { SITE } from '../../site.config';
-import { loadAll, fmtDate, isoDate } from '../../lib/records';
+import { loadAll, fmtDate } from '../../lib/records';
 
 export async function getStaticPaths() {
   const { orgs } = await loadAll();
@@ -15,7 +17,6 @@ const d = o.data;
 const all = recs.filter((r) => r.counterparty?.id === o.id);
 const list = all.filter((r) => !r.earlier);
 const businesses = [...new Map(all.flatMap((r) => r.businesses).map((b) => [b.id, b])).values()].sort((a, b) => a.data.name.localeCompare(b.data.name));
-const KIND = { funder: 'Funder', program: 'Program', 'event-host': 'Event host', government: 'Government', other: 'Organization' };
 const rounds = [...d.rounds].reverse(); // newest first
 const inRound = (slug: string) => all.filter((r) => r.d.round === slug);
 const url = new URL(`/org/${o.id}/`, SITE.url).href;
@@ -31,6 +32,7 @@ const jsonld = {
     description: d.summary,
     subjectOf: [
       ...(c ? [{ '@type': 'DigitalDocument', name: c.source_label, url: c.source_url, dateCreated: c.source_date }] : []),
+      ...d.rounds.filter((rd) => rd.criteria).map((rd) => ({ '@type': 'DigitalDocument', name: rd.criteria!.source_label, url: rd.criteria!.source_url })),
       ...list.map((r) => new URL(r.url, SITE.url).href),
     ],
   },
@@ -50,32 +52,18 @@ const jsonld = {
         {d.website && <> · <a href={d.website} rel="noopener">Official page</a></>}</p>
       {d.run_by.length > 0 && <p class="runby">Run by {d.run_by.join(', ')}.</p>}
 
-      {c && (
-        <div class="criteria" id="criteria">
-          <h2 class="sec">Eligibility on file</h2>
-          <p class="crit-src">
-            From <a href={c.source_url} rel="noopener">{c.source_label}</a>{c.source_date && <>, {c.source_date}</>}.
-            {c.archived_url && <> <a href={c.archived_url} rel="noopener">Archived copy</a>.</>}
-          </p>
-          <dl class="crit-list">
-            <dt>Where the business must be</dt><dd>{c.location_rule}</dd>
-            {c.location_proof && <><dt>What applicants had to show</dt><dd>{c.location_proof}</dd></>}
-            {c.other.length > 0 && <><dt>Other requirements</dt><dd><ul>{c.other.map((x) => <li>{x}</li>)}</ul></dd></>}
-          </dl>
-          {c.note && <p class="crit-note">{c.note}</p>}
-          <p class="crit-dates mono">Saved <time datetime={isoDate(c.captured)}>{fmtDate(c.captured)}</time> · Last checked <time datetime={isoDate(c.last_checked)}>{fmtDate(c.last_checked)}</time></p>
-        </div>
-      )}
+      {c && <Criteria c={c} />}
 
       {rounds.length > 0 && (
         <>
-          <h2 class="sec">Rounds</h2>
+          <h2 class="sec">What {d.name} runs</h2>
           <ul class="rounds">
             {rounds.map((rd) => {
               const n = inRound(rd.slug).length;
               return (
                 <li>
                   <a class="round-name" href={`/org/${o.id}/${rd.slug}/`}>{rd.label}</a>
+                  {rd.format && <span class="fmt">{FORMAT[rd.format]}</span>}
                   <span class="round-meta">
                     {rd.opens && rd.closes && <>Applications {fmtDate(rd.opens)} to {fmtDate(rd.closes)}</>}
                     {!rd.opens && rd.closes && <>Applications closed {fmtDate(rd.closes)}</>}
@@ -121,6 +109,7 @@ const jsonld = {
 .rounds li { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; padding: 14px 0; border-bottom: 1px solid var(--line); }
 .round-name { font-family: var(--display); font-weight: 700; font-size: 20px; min-width: 110px; }
 .round-meta { color: var(--muted); flex: 1; }
+.fmt { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--blue); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; }
 .round-facts { margin-bottom: 8px; }
 .crumb-on-blue { color: inherit; }
 @media (max-width: 640px) { .crit-list { grid-template-columns: 1fr; gap: 2px; } .crit-list dd { margin-bottom: 10px; } }

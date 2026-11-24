@@ -1,0 +1,18 @@
+---
+import { fmtDate, isoDate } from '../lib/records';
+const { c, heading = 'Eligibility on file' } = Astro.props;
+---
+<div class="criteria" id="criteria">
+  <h2 class="sec">{heading}</h2>
+  <p class="crit-src">
+    From <a href={c.source_url} rel="noopener">{c.source_label}</a>{c.source_date && <>, {c.source_date}</>}.
+    {c.archived_url && <> <a href={c.archived_url} rel="noopener">Archived copy</a>.</>}
+  </p>
+  <dl class="crit-list">
+    <dt>Where the business must be</dt><dd>{c.location_rule}</dd>
+    {c.location_proof && <><dt>What applicants had to show</dt><dd>{c.location_proof}</dd></>}
+    {c.other.length > 0 && <><dt>Other requirements</dt><dd><ul>{c.other.map((x: string) => <li>{x}</li>)}</ul></dd></>}
+  </dl>
+  {c.note && <p class="crit-note">{c.note}</p>}
+  <p class="crit-dates mono">Saved <time datetime={isoDate(c.captured)}>{fmtDate(c.captured)}</time> · Last checked <time datetime={isoDate(c.last_checked)}>{fmtDate(c.last_checked)}</time></p>
+</div>

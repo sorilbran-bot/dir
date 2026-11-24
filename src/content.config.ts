@@ -71,17 +71,8 @@ const businesses = defineCollection({
   }),
 });
 
-const organizations = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/organizations' }),
-  schema: z.object({
-    slug: z.string(),
-    name: z.string(),
-    kind: z.enum(['funder', 'program', 'event-host', 'government', 'other']),
-    website: z.string().url().optional(),
-    summary: z.string().optional(), // one or two plain sentences: what it is, who runs it
-    run_by: z.array(z.string()).default([]),
-    // Programs only: the eligibility rules DIR checked records against, with where and when they were captured.
-    criteria: z
+// Eligibility rules DIR checked records against, with where and when they were captured.
+const criteria = z
       .object({
         source_label: z.string(),
         source_url: z.string().url(),
@@ -93,13 +84,27 @@ const organizations = defineCollection({
         location_proof: z.string().optional(), // what applicants had to show
         other: z.array(z.string()).default([]),
         note: z.string().optional(),
-      })
-      .optional(),
+      });
+
+const organizations = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/organizations' }),
+  schema: z.object({
+    slug: z.string(),
+    name: z.string(),
+    kind: z.enum(['funder', 'initiative', 'program', 'event-host', 'government', 'other']), // who they are; what they run goes in rounds
+    website: z.string().url().optional(),
+    summary: z.string().optional(), // one or two plain sentences: what it is, who runs it
+    run_by: z.array(z.string()).default([]),
+    // Programs only: the eligibility rules DIR checked records against, with where and when they were captured.
+    criteria: criteria.optional(), // rules that apply to everything this organization runs (e.g. a fund's guidelines)
     rounds: z
       .array(
         z.object({
           slug: z.string(), // round-3
-          label: z.string(), // Round 3
+          label: z.string(), // Round 3, Pitch 26
+          // What this is. A program is time-boxed and structured (a cohort you move through); a pitch competition is pitching for money.
+          format: z.enum(['grant-round', 'pitch-competition', 'program-cohort', 'challenge']).optional(),
+          criteria: criteria.optional(), // rules for this competition or cohort, when they differ from the organization's
           opens: z.coerce.date().optional(),
           closes: z.coerce.date().optional(),
           announced: z.coerce.date().optional(),
