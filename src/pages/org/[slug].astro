@@ -99,7 +99,7 @@ const jsonld = {
       )}
 
       {!linkOnly && <h2 class="sec">Records</h2>}
-      {!linkOnly && (list.length ? <div class="cards">{list.map((r) => <RecordCard r={r} />)}</div> : <p class="empty">No records yet.</p>)}
+      {!linkOnly && (list.length ? <div class="cards">{list.map((r) => <RecordCard r={r} />)}</div> : <p class="empty">No records yet. The Detroit Innovation Record began on {fmtDate(new Date(SITE.recordStart))}.</p>)}
       {businesses.length > 0 && (
         <>
           <h2 class="sec">Businesses named with {d.name}</h2>

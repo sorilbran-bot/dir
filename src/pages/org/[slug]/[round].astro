@@ -72,7 +72,7 @@ const jsonld = {
       {rd.criteria && <Criteria c={rd.criteria} heading={`Eligibility for ${rd.label}`} />}
       <h2 class="sec">Records from this round</h2>
       <p class="count">{counted.length} {counted.length === 1 ? 'record' : 'records'}{list.length > counted.length && <> · {list.length - counted.length} earlier</>}</p>
-      {list.length ? <div class="cards">{list.map((r) => <RecordCard r={r} />)}</div> : <p class="empty">No records from this round yet.</p>}
+      {list.length ? <div class="cards">{list.map((r) => <RecordCard r={r} />)}</div> : <p class="empty">No records from this round yet. The Detroit Innovation Record began on {fmtDate(new Date(SITE.recordStart))}.</p>}
       <StartNote />
     </div>
   </section>
