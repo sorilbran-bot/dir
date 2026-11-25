@@ -2,11 +2,11 @@
 slug: lake-trust-foundation
 name: Lake Trust Foundation
 kind: funder
-website: https://laketrust.org/lake-trust-entrepreneurship-institute
-summary: The charitable foundation of Lake Trust Credit Union. It runs the Lake Trust Entrepreneurship Institute, a free online program at Cleary University, and a pitch competition for the small business owners who complete it.
+website: https://www.laketrust.org/foundation
+summary: A Michigan 501(c)(3) founded in 2013 as an independent entity of Lake Trust Credit Union. It awards grants, donations and scholarships across Michigan, and runs a pitch competition for small business owners who complete the Lake Trust Entrepreneurship Institute, a free online program at Cleary University.
 run_by:
-  - Lake Trust Foundation
-  - Lake Trust Entrepreneurship Institute at Cleary University
+  - Lake Trust Foundation (an independent entity of Lake Trust Credit Union)
+  - Lake Trust Entrepreneurship Institute at Cleary University (the feeder program)
 rounds:
   - slug: fall-2026
     label: Fall 2026 Entrepreneur Pitch Competition
@@ -17,6 +17,16 @@ rounds:
     venue: Lake Trust Credit Union headquarters, Brighton
     awards: "$20,000 in total: $10,000 first place, $5,000 second, $3,500 third and a $1,500 Audience Choice award"
     announcement_url: https://www.linkedin.com/posts/last-thursday-lake-trust-foundation-held-ugcPost-7526036407178592257-RkBZ/
+    participants:
+      - 1st Step Healthcare Training
+      - Little Susie Café & Sweetshop
+      - Fruits Coffee Company
+      - Hurley's Coffee & Mercantile
+      - Diana Kim Hair Artist Inc.
+      - Do Not Grow Weary
+      - Flippin Good LLC
+      - KayLuxe & Co.
+      - The Life Shelf, LLC
     criteria:
       source_label: Lake Trust Entrepreneurship Institute page
       source_url: https://laketrust.org/lake-trust-entrepreneurship-institute
@@ -26,5 +36,4 @@ rounds:
       other:
         - Open to Lake Trust business and personal members, and Lake Trust community partners and their members.
         - Entrepreneurs must complete the Institute's courses to apply for a foundation grant. Finalists are invited to pitch.
-      note: Because the competition is open statewide, DIR lists only Detroit businesses.
 ---

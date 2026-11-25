@@ -33,5 +33,4 @@ rounds:
         - For-profit ventures or social enterprises with revenue-generating models or funded pilots.
         - "Solutions must fit at least one focus area: Build (housing and the built environment), Move (transportation and mobility), Power (energy and the grid) or Sustain (water and waste systems)."
         - Previous Yes/Cities innovators aren't eligible.
-      note: Because the challenge is open worldwide, DIR will list only the selected ventures that are based in Detroit.
 ---

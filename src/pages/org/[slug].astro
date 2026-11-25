@@ -48,7 +48,7 @@ const jsonld = {
   </section>
   <section class="block">
     <div class="wrap">
-      <p class="count">{list.length} {list.length === 1 ? 'record' : 'records'} · {businesses.length} Detroit {businesses.length === 1 ? 'business' : 'businesses'}
+      <p class="count">{list.length} {list.length === 1 ? 'record' : 'records'} · {businesses.length} {businesses.length === 1 ? 'business' : 'businesses'}
         {d.website && <> · <a href={d.website} rel="noopener">Official page</a></>}</p>
       {d.run_by.length > 0 && <p class="runby">Run by {d.run_by.join(', ')}.</p>}
 

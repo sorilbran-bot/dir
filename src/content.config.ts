@@ -66,7 +66,7 @@ const businesses = defineCollection({
         }),
       )
       .default([]),
-    detroit_check: z.enum(['state-registration', 'county-dba', 'city-license', 'program-address-proof', 'business-address']), // business-address: a brick-and-mortar or operating address in Detroit, documented publicly
+    detroit_check: z.enum(['state-registration', 'county-dba', 'city-license', 'program-address-proof', 'business-address', 'not-confirmed']), // business-address: a brick-and-mortar or operating address in Detroit, documented publicly. not-confirmed: published as Southeast Michigan, not counted toward the pilot goal until checked
     example: z.boolean().default(false),
   }),
 });
@@ -105,6 +105,7 @@ const organizations = defineCollection({
           // What this is. A program is time-boxed and structured (a cohort you move through); a pitch competition is pitching for money.
           format: z.enum(['grant-round', 'pitch-competition', 'program-cohort', 'challenge']).optional(),
           criteria: criteria.optional(), // rules for this competition or cohort, when they differ from the organization's
+          participants: z.array(z.string()).default([]), // everyone the program named as taking part, as written in its announcement. Names only; records carry the details.
           opens: z.coerce.date().optional(),
           closes: z.coerce.date().optional(),
           announced: z.coerce.date().optional(),
