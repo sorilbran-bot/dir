@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import { loadAll, fmtDate, isoDate } from '../../lib/records';
 import { allRounds } from '../../lib/programs';
+import ComingUp from '../../components/ComingUp.astro';
 
 const { recs, orgs } = await loadAll();
 const rounds = allRounds(orgs);
@@ -24,6 +25,7 @@ const when = (rd: (typeof rounds)[number]['rd']) => {
       <p class="lede">Pitch competitions, program cohorts, challenges and grant rounds on file, with their rules and dates. Each one links to who runs it and the records that came out of it.</p>
     </div>
   </section>
+  <ComingUp heading="Next 60 days" />
   <section class="block">
     <div class="wrap">
       <h2 class="sec" id="h-upcoming">Open or coming up</h2>

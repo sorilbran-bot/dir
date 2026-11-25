@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import RecordCard from '../components/RecordCard.astro';
 import StartNote from '../components/StartNote.astro';
+import ComingUp from '../components/ComingUp.astro';
 import { SITE, TYPES, TYPE_KEYS, PILOT_TYPES } from '../site.config';
 import { loadAll, counted, quarterOf } from '../lib/records';
 
@@ -51,6 +52,8 @@ const jsonld = {
       </div>
     </div>
   </section>
+
+  <ComingUp />
 
   <section class="block">
     <div class="wrap">

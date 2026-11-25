@@ -1,0 +1,68 @@
+---
+// Programs with an application deadline or a decision in the next 60 days.
+// Every program on file is rendered; the visitor's browser keeps only the ones inside the window,
+// so the list stays current without a rebuild.
+import { loadAll, isoDate } from '../lib/records';
+import { allRounds } from '../lib/programs';
+interface Props { heading?: string; days?: number }
+const { heading = 'Coming up in the Detroit ecosystem', days = 60 } = Astro.props;
+const { orgs } = await loadAll();
+const items = allRounds(orgs).map((x) => {
+  const rd = x.rd;
+  const dates: [string, string][] = [];
+  if (rd.opens) dates.push([isoDate(rd.opens), 'Applications open']);
+  if (rd.closes) dates.push([isoDate(rd.closes), 'Applications close']);
+  if (rd.finalists_announced) dates.push([isoDate(rd.finalists_announced), 'Finalists announced']);
+  if (rd.event) dates.push([isoDate(rd.event), rd.event_label ?? 'Event']);
+  if (rd.announced) dates.push([isoDate(rd.announced), 'Announced']);
+  return { x, dates };
+});
+---
+<section class="block coming" id="coming" hidden data-days={days}>
+  <div class="wrap">
+    <div class="head-row"><h2>{heading}</h2><a href="/programs/">All programs →</a></div>
+    <p class="fine">Application deadlines and decisions in the next {days} days.</p>
+    <ul class="coming-list">
+      {items.map(({ x, dates }) => (
+        <li class="coming-card" hidden data-dates={JSON.stringify(dates)}>
+          <span class="fmt">{x.format ?? 'Program'}</span>
+          <a class="c-name" href={x.url}>{x.org.data.name}: {x.rd.label}</a>
+          <span class="c-next"></span>
+          {x.rd.awards && <span class="c-awards">{x.rd.awards}</span>}
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<script is:inline>
+(function () {
+  var box = document.getElementById('coming'); if (!box) return;
+  var days = +box.dataset.days, ms = 864e5;
+  var t0 = new Date(); t0.setHours(0, 0, 0, 0);
+  function iso(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  var today = iso(t0), end = iso(new Date(t0.getTime() + days * ms));
+  var list = box.querySelector('.coming-list'), shown = [];
+  Array.prototype.slice.call(list.children).forEach(function (li) {
+    var next = JSON.parse(li.dataset.dates).filter(function (d) { return d[0] >= today && d[0] <= end; }).sort()[0];
+    if (!next) return;
+    var p = next[0].split('-'), when = new Date(+p[0], +p[1] - 1, +p[2]);
+    var n = Math.round((when - t0) / ms);
+    li.querySelector('.c-next').textContent = next[1] + ' ' + when.toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) +
+      (n === 0 ? ' · today' : n === 1 ? ' · tomorrow' : ' · in ' + n + ' days');
+    li.hidden = false; shown.push([next[0], li]);
+  });
+  shown.sort(function (a, b) { return a[0] < b[0] ? -1 : 1; }).forEach(function (s) { list.appendChild(s[1]); });
+  box.hidden = shown.length === 0;
+})();
+</script>
+
+<style>
+.coming { background: var(--surface); }
+.coming-list { list-style: none; padding: 0; margin: 16px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.coming-card { background: #fff; border: 1px solid var(--line); border-top: 4px solid var(--orange); border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
+.c-name { font-weight: 700; font-size: 18px; line-height: 1.3; }
+.c-next { font-weight: 600; color: var(--blue); }
+.c-awards { color: var(--muted); font-size: 14px; }
+.coming .fmt { align-self: flex-start; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--blue); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; }
+</style>
