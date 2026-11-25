@@ -1,6 +1,7 @@
 // Plain-language labels for what an organization runs. Kept apart from who runs it.
 export const FORMAT: Record<string, string> = {
   'grant-round': 'Grant round',
+  'rolling-grant': 'Grant, open year-round',
   'pitch-competition': 'Pitch competition',
   'program-cohort': 'Program cohort',
   challenge: 'Challenge',
