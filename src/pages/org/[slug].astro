@@ -3,7 +3,7 @@ import Base from '../../layouts/Base.astro';
 import RecordCard from '../../components/RecordCard.astro';
 import StartNote from '../../components/StartNote.astro';
 import Criteria from '../../components/Criteria.astro';
-import { FORMAT, KIND } from '../../lib/formats';
+import { FORMAT, KIND, ROLE_TO, ROLE_FROM, ROLE_ORDER } from '../../lib/formats';
 import { SITE } from '../../site.config';
 import { loadAll, fmtDate } from '../../lib/records';
 
@@ -21,6 +21,12 @@ const rounds = [...d.rounds].reverse(); // newest first
 const inRound = (slug: string) => all.filter((r) => r.d.round === slug);
 const url = new URL(`/org/${o.id}/`, SITE.url).href;
 const c = d.criteria;
+// An organization that only appears in another's lineage: no rounds, no records. Its page shows the connections, not empty record lists.
+const linkOnly = rounds.length === 0 && all.length === 0;
+const byId = new Map(orgs.map((x) => [x.id, x]));
+// This organization's own lineage, then everything that names it in theirs.
+const up = ROLE_ORDER.map((role) => ({ role, items: d.connections.filter((k) => k.role === role).map((k) => ({ org: byId.get(k.org.id)!, note: k.note })) })).filter((g) => g.items.length);
+const down = ROLE_ORDER.map((role) => ({ role, items: orgs.flatMap((x) => x.data.connections.filter((k) => k.org.id === o.id && k.role === role).map((k) => ({ org: x, note: k.note }))) })).filter((g) => g.items.length);
 const jsonld = {
   '@context': 'https://schema.org',
   '@type': 'ProfilePage',
@@ -35,6 +41,8 @@ const jsonld = {
       ...d.rounds.filter((rd) => rd.criteria).map((rd) => ({ '@type': 'DigitalDocument', name: rd.criteria!.source_label, url: rd.criteria!.source_url })),
       ...list.map((r) => new URL(r.url, SITE.url).href),
     ],
+    ...(up.find((g) => g.role === 'funds') ? { funder: up.find((g) => g.role === 'funds')!.items.map((it) => ({ '@type': 'Organization', name: it.org.data.name, url: new URL(`/org/${it.org.id}/`, SITE.url).href })) } : {}),
+    ...(up.find((g) => g.role === 'affiliate') ? { parentOrganization: up.find((g) => g.role === 'affiliate')!.items.map((it) => ({ '@type': 'Organization', name: it.org.data.name })) } : {}),
   },
 };
 ---
@@ -48,9 +56,20 @@ const jsonld = {
   </section>
   <section class="block">
     <div class="wrap">
-      <p class="count">{list.length} {list.length === 1 ? 'record' : 'records'} · {businesses.length} {businesses.length === 1 ? 'business' : 'businesses'}
-        {d.website && <> · <a href={d.website} rel="noopener">Official page</a></>}</p>
-      {d.run_by.length > 0 && <p class="runby">Run by {d.run_by.join(', ')}.</p>}
+      {linkOnly ? (d.website && <p class="count"><a href={d.website} rel="noopener">Official page</a></p>) : (
+        <p class="count">{list.length} {list.length === 1 ? 'record' : 'records'} · {businesses.length} {businesses.length === 1 ? 'business' : 'businesses'}
+          {d.website && <> · <a href={d.website} rel="noopener">Official page</a></>}</p>
+      )}
+      {(up.length > 0 || down.length > 0) && (
+        <div class="lineage">
+          <h2 class="sec">How it's connected</h2>
+          <dl>
+            {up.map((g) => <><dt>{ROLE_TO[g.role]}</dt>{g.items.map((it) => <dd><a href={`/org/${it.org.id}/`}>{it.org.data.name}</a>{it.note && <span class="ln-note"> · {it.note}</span>}</dd>)}</>)}
+            {down.map((g) => <><dt>{ROLE_FROM[g.role]}</dt>{g.items.map((it) => <dd><a href={`/org/${it.org.id}/`}>{it.org.data.name}</a>{it.note && <span class="ln-note"> · {it.note}</span>}</dd>)}</>)}
+          </dl>
+        </div>
+      )}
+      {d.run_by.length > 0 && <p class="runby">Also involved: {d.run_by.join(', ')}.</p>}
 
       {c && <Criteria c={c} />}
 
@@ -79,15 +98,15 @@ const jsonld = {
         </>
       )}
 
-      <h2 class="sec">Records</h2>
-      {list.length ? <div class="cards">{list.map((r) => <RecordCard r={r} />)}</div> : <p class="empty">No records yet.</p>}
+      {!linkOnly && <h2 class="sec">Records</h2>}
+      {!linkOnly && (list.length ? <div class="cards">{list.map((r) => <RecordCard r={r} />)}</div> : <p class="empty">No records yet.</p>)}
       {businesses.length > 0 && (
         <>
           <h2 class="sec">Businesses named with {d.name}</h2>
           <ul class="orglist">{businesses.map((b) => <li><a href={`/business/${b.id}/`}>{b.data.name}</a></li>)}</ul>
         </>
       )}
-      <StartNote />
+      {!linkOnly && <StartNote />}
     </div>
   </section>
 </Base>
@@ -113,4 +132,9 @@ const jsonld = {
 .round-facts { margin-bottom: 8px; }
 .crumb-on-blue { color: inherit; }
 @media (max-width: 640px) { .crit-list { grid-template-columns: 1fr; gap: 2px; } .crit-list dd { margin-bottom: 10px; } }
+.lineage dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 20px; margin: 0 0 24px; }
+.lineage dt { font-weight: 600; color: var(--muted); grid-column: 1; }
+.lineage dd { margin: 0; grid-column: 2; }
+.ln-note { color: var(--muted); }
+@media (max-width: 640px) { .lineage dl { grid-template-columns: 1fr; } .lineage dt, .lineage dd { grid-column: 1; } .lineage dt { margin-top: 10px; } }
 </style>

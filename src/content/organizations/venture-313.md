@@ -3,10 +3,20 @@ slug: venture-313
 name: Venture 313
 kind: funder
 website: https://www.venture313.com
-summary: A Gilbert Family Foundation initiative, launched in 2022, that funds and supports Detroit tech founders through three partners. TechTown Detroit gives grants, Invest Detroit Ventures makes equity investments and Detroit Development Fund makes loans.
-run_by:
-  - Gilbert Family Foundation (founder and funder)
-  - TechTown Detroit, Invest Detroit Ventures and Detroit Development Fund (partners)
+summary: A Gilbert Family Foundation initiative, launched in 2022, that funds and supports Detroit tech founders through three partners, with grants from TechTown Detroit, equity from Invest Detroit Ventures and loans from Detroit Development Fund. It succeeded Rocket Mortgage Detroit Demo Day, a pitch competition that ran from 2017.
+connections:
+  - org: gilbert-family-foundation
+    role: funds
+    note: "Venture 313 is a Gilbert Family Foundation initiative, launched in 2022 with $10 million and expanded with $6.4 million in May 2026"
+  - org: techtown-detroit
+    role: partner
+    note: "Grants of up to $15,000"
+  - org: invest-detroit-ventures
+    role: partner
+    note: "Equity investments of $25,000 to $250,000"
+  - org: detroit-development-fund
+    role: partner
+    note: "Loans of up to $250,000. It also organizes pitch events for tech founders, including Tech the Halls, and fields applicant questions for Pitch 26"
 rounds:
   - slug: pitch-26
     label: Pitch 26

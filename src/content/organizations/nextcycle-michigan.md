@@ -4,8 +4,17 @@ name: NextCycle Michigan
 kind: program
 website: https://www.nextcyclemichigan.com
 summary: A statewide accelerator program for recycling and materials-recovery projects, run as an initiative of the Michigan Department of Environment, Great Lakes, and Energy (EGLE). Teams move through it in cohorts, and each cohort ends with a public showcase where teams pitch for awards.
-run_by:
-  - Michigan Department of Environment, Great Lakes, and Energy (EGLE)
+connections:
+  - org: egle
+    role: funds
+    note: "NextCycle Michigan is an EGLE initiative, funded by EGLE"
+  - org: resource-recycling-systems
+    role: runs
+    note: "Facilitates the program"
+  - org: centrepolis-accelerator
+    role: partner
+  - org: michigan-recycling-coalition
+    role: partner
 rounds:
   - slug: fall-2026
     label: Fall 2026 cohort

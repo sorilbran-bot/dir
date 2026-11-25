@@ -4,10 +4,6 @@ name: Detroit Startup Fund
 kind: funder
 website: https://detroitmi.gov/startup
 summary: A City of Detroit grant fund for Detroit-based tech startups. It gives $15,000 seed grants and $50,000 scale grants and is paid for from the City's general fund.
-run_by:
-  - City of Detroit
-  - Detroit Economic Growth Corporation (DEGC)
-  - Detroit Economic Growth Association (DEGA)
 criteria:
   source_label: Detroit Startup Fund Program Guidelines (DEGA)
   source_url: https://detroitmi.gov/sites/detroitmi.localhost/files/2025-07/DEGA%20Approved%20Detroit%20Startup%20Fund%20Program%20Guidelines.pdf
@@ -23,6 +19,13 @@ criteria:
     - A commitment to share progress data with DEGC and the City.
     - "Scale grants only: at least $100,000 in outside private investment in the past 18 months, and actively raising at least $250,000. Grants and prizes don't count toward this."
   note: DIR found no separate guidelines for later rounds and treats these as current until the program publishes new ones.
+connections:
+  - org: degc
+    role: runs
+    note: "Selects recipients and runs the fund with the City. Grant agreements are issued by the Detroit Economic Growth Association (DEGA)"
+  - org: city-of-detroit
+    role: funds
+    note: "Paid for from the City's general fund, approved by the Mayor and City Council"
 rounds:
   - slug: round-1
     label: Round 1

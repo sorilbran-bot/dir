@@ -5,10 +5,16 @@ kind: initiative
 website: https://michigancentral.com/yesdetroit/
 summary: A cross-sector initiative led by Michigan Central to make the infrastructure Detroiters rely on more affordable, reliable, safe and sustainable. Detroit is the fourth city in the World Economic Forum's Yes/Cities program.
 run_by:
-  - Michigan Central (lead)
   - World Economic Forum Yes/Cities
   - Co-sponsors Amazon Web Services, Cisco, Deloitte and Oracle
-  - Public partners including the City of Detroit and the State of Michigan
+  - Public partners including the State of Michigan
+connections:
+  - org: michigan-central
+    role: runs
+    note: "Leads the initiative"
+  - org: city-of-detroit
+    role: partner
+    note: "Public partner"
 rounds:
   - slug: 2026-27
     label: 2026–27 Innovation Challenge

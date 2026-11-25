@@ -1,7 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { loadAll, counted } from '../../lib/records';
-import { FORMAT } from '../../lib/formats';
+import { FORMAT, KIND } from '../../lib/formats';
 
 const { recs, orgs } = await loadAll();
 const live = counted(recs);
@@ -9,6 +9,10 @@ const rows = orgs
   .map((o) => ({ o, n: live.filter((r) => r.counterparty?.id === o.id).length }))
   .filter((x) => x.n > 0)
   .sort((a, b) => a.o.data.name.localeCompare(b.o.data.name));
+// Organizations behind the programs: named in another organization's lineage, with nothing of their own on file.
+const behind = orgs
+  .filter((o) => o.data.rounds.length === 0 && !live.some((r) => r.counterparty?.id === o.id) && orgs.some((x) => x.data.connections.some((k) => k.org.id === o.id)))
+  .sort((a, b) => a.data.name.localeCompare(b.data.name));
 // Programs DIR has on file before any Detroit record exists: open calls, upcoming finals, cohorts not yet named.
 const onFile = orgs
   .filter((o) => o.data.rounds.length > 0 && !live.some((r) => r.counterparty?.id === o.id))
@@ -35,6 +39,15 @@ const onFile = orgs
           <p class="fine">Pitch competitions, programs and grant rounds open to Detroit founders, with their rules and dates on file. Records show up as each one is documented.</p>
           <ul class="orgtable">
             {onFile.map((o) => <li><a href={`/org/${o.id}/`}>{o.data.name}</a><span class="mono">{o.data.rounds.at(-1)?.label}{o.data.rounds.at(-1)?.format && <> · {FORMAT[o.data.rounds.at(-1)!.format!]}</>}</span></li>)}
+          </ul>
+        </>
+      )}
+      {behind.length > 0 && (
+        <>
+          <h2 class="sec">Behind the programs</h2>
+          <p class="fine">Funders, operators and partners connected to the programs above.</p>
+          <ul class="orgtable">
+            {behind.map((o) => <li><a href={`/org/${o.id}/`}>{o.data.name}</a><span class="mono">{KIND[o.data.kind]}</span></li>)}
           </ul>
         </>
       )}

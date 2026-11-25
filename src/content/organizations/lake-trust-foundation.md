@@ -4,9 +4,13 @@ name: Lake Trust Foundation
 kind: funder
 website: https://www.laketrust.org/foundation
 summary: A Michigan 501(c)(3) founded in 2013 as an independent entity of Lake Trust Credit Union. It awards grants, donations and scholarships across Michigan, and runs a pitch competition for small business owners who complete the Lake Trust Entrepreneurship Institute, a free online program at Cleary University.
-run_by:
-  - Lake Trust Foundation (an independent entity of Lake Trust Credit Union)
-  - Lake Trust Entrepreneurship Institute at Cleary University (the feeder program)
+connections:
+  - org: lake-trust-credit-union
+    role: affiliate
+    note: "The foundation is an independent entity of Lake Trust Credit Union"
+  - org: cleary-university
+    role: partner
+    note: "Hosts the Lake Trust Entrepreneurship Institute"
 rounds:
   - slug: fall-2026
     label: Fall 2026 Entrepreneur Pitch Competition

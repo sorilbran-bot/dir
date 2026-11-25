@@ -91,10 +91,15 @@ const organizations = defineCollection({
   schema: z.object({
     slug: z.string(),
     name: z.string(),
-    kind: z.enum(['funder', 'initiative', 'program', 'event-host', 'government', 'other']), // who they are; what they run goes in rounds
+    kind: z.enum(['funder', 'initiative', 'program', 'event-host', 'government', 'economic-development', 'support-org', 'university', 'company', 'other']), // who they are; what they run goes in rounds
     website: z.string().url().optional(),
     summary: z.string().optional(), // one or two plain sentences: what it is, who runs it
-    run_by: z.array(z.string()).default([]),
+    run_by: z.array(z.string()).default([]), // plain-text names for anyone without their own page (e.g. corporate co-sponsors)
+    // Lineage: who runs this, who pays for it, who partners on it. Each connected organization gets its own page,
+    // and that page lists everything it's connected to.
+    connections: z
+      .array(z.object({ org: reference('organizations'), role: z.enum(['runs', 'funds', 'partner', 'affiliate']), note: z.string().optional() }))
+      .default([]),
     // Programs only: the eligibility rules DIR checked records against, with where and when they were captured.
     criteria: criteria.optional(), // rules that apply to everything this organization runs (e.g. a fund's guidelines)
     rounds: z
