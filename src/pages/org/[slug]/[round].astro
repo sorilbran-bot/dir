@@ -46,7 +46,7 @@ const jsonld = {
         {rd.announced && <><dt>Winners announced</dt><dd>{fmtDate(rd.announced)}{!rd.event && rd.venue && <>, {rd.venue}</>}</dd></>}
         {!rd.announced && !rd.event && rd.venue && <><dt>Where</dt><dd>{rd.venue}</dd></>}
         {rd.announcement_url && <><dt>Official announcement</dt><dd><a href={rd.announcement_url} rel="noopener">Read it at the source</a></dd></>}
-        <dt>Run by</dt><dd><a href={`/org/${o.id}/`}>{o.data.name}</a></dd>
+        <dt>Part of</dt><dd><a href={`/org/${o.id}/`}>{o.data.name}</a></dd>
         {!rd.criteria && o.data.criteria && <><dt>Eligibility</dt><dd><a href={`/org/${o.id}/#criteria`}>Rules on file for {o.data.name}</a></dd></>}
       </dl>
       {rd.note && <p class="crit-note">{rd.note}</p>}

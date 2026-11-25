@@ -35,9 +35,10 @@ const here = (p: string) => (p === '/' ? path === '/' : path.startsWith(p)) ? 'p
       <a class="brand" href="/"><b>{SITE.short}</b><span>{SITE.name}</span></a>
       <nav aria-label="Main">
         <a href="/records/" aria-current={here('/records/')}><span class="lg">Browse records</span><span class="sm">Records</span></a>
+        <a href="/programs/" aria-current={here('/programs/')}>Programs</a>
         <a href="/organizations/" aria-current={here('/organizations/')}>Organizations</a>
         <a href="/about/" aria-current={here('/about/')}>How it works</a>
-        <a href="/about/#contact">Contact</a>
+        <a class="nav-contact" href="/about/#contact">Contact</a>
       </nav>
     </div>
   </header>

@@ -225,4 +225,5 @@ footer a { color: var(--blue-ink); }
   .mast nav a { white-space: nowrap; padding-block: 10px; }
   .mast nav .lg { display: none; }
   .mast nav .sm { display: inline; }
+  .mast nav .nav-contact { display: none; } /* reachable from How it works */
 }

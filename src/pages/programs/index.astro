@@ -1,0 +1,72 @@
+---
+import Base from '../../layouts/Base.astro';
+import { loadAll, fmtDate, isoDate } from '../../lib/records';
+import { allRounds } from '../../lib/programs';
+
+const { recs, orgs } = await loadAll();
+const rounds = allRounds(orgs);
+const n = (orgId: string, slug: string) => recs.filter((r) => r.counterparty?.id === orgId && r.d.round === slug && !r.earlier).length;
+const when = (rd: (typeof rounds)[number]['rd']) => {
+  const bits: string[] = [];
+  if (rd.opens && rd.closes) bits.push(`Applications ${fmtDate(rd.opens)} to ${fmtDate(rd.closes)}`);
+  else if (rd.closes) bits.push(`Applications closed ${fmtDate(rd.closes)}`);
+  if (rd.event) bits.push(`${rd.event_label ?? 'Event'} ${fmtDate(rd.event)}`);
+  if (rd.announced) bits.push(`Announced ${fmtDate(rd.announced)}`);
+  else if (rd.finalists_announced) bits.push(`Finalists expected ${fmtDate(rd.finalists_announced)}`);
+  return bits.join(' · ');
+};
+---
+<Base title="Programs" description="Pitch competitions, program cohorts, challenges and grant rounds open to Detroit founders, with who runs them, their rules and their dates.">
+  <section class="pagehead">
+    <div class="wrap">
+      <span class="label on-blue">Browse</span>
+      <h1>Programs</h1>
+      <p class="lede">Pitch competitions, program cohorts, challenges and grant rounds on file, with their rules and dates. Each one links to who runs it and the records that came out of it.</p>
+    </div>
+  </section>
+  <section class="block">
+    <div class="wrap">
+      <h2 class="sec" id="h-upcoming">Open or coming up</h2>
+      <ul class="progs" id="upcoming"></ul>
+      <h2 class="sec" id="h-past">Recent</h2>
+      <ul class="progs" id="past">
+        {rounds.map((x) => {
+          const dates = [x.rd.opens, x.rd.closes, x.rd.finalists_announced, x.rd.event].filter(Boolean).map((d) => isoDate(d as Date));
+          const c = n(x.org.id, x.rd.slug);
+          return (
+            <li data-dates={dates.join(' ')} data-announced={x.rd.announced ? isoDate(x.rd.announced) : ''}>
+              <a class="p-name" href={x.url}>{x.org.data.name}: {x.rd.label}</a>
+              {x.format && <span class="fmt">{x.format}</span>}
+                            <span class="p-when">{when(x.rd)}</span>
+              <span class="mono">{c} {c === 1 ? 'record' : 'records'}</span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<script is:inline>
+(function () {
+  // Sort on the visitor's date so "coming up" stays true without a rebuild.
+  var today = new Date(); var t = today.getFullYear() + '-' + ('0' + (today.getMonth() + 1)).slice(-2) + '-' + ('0' + today.getDate()).slice(-2);
+  var up = document.getElementById('upcoming'), past = document.getElementById('past');
+  Array.prototype.slice.call(past.children).forEach(function (li) {
+    var future = (li.dataset.dates || '').split(' ').some(function (d) { return d && d >= t; });
+    if (future && !li.dataset.announced) up.appendChild(li);
+  });
+  if (!up.children.length) { up.hidden = true; document.getElementById('h-upcoming').hidden = true; }
+  if (!past.children.length) { past.hidden = true; document.getElementById('h-past').hidden = true; }
+})();
+</script>
+
+<style>
+.progs { list-style: none; padding: 0; margin: 0 0 40px; border-top: 2px solid var(--ink, #111); }
+.progs li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.p-name { font-weight: 700; font-size: 18px; }
+.p-org, .p-when { color: var(--muted); font-size: 14px; }
+.p-when { flex-basis: 100%; }
+.progs .mono { margin-left: auto; font-size: 13px; color: var(--muted); }
+.fmt { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--blue); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; }
+</style>
