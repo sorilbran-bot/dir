@@ -110,6 +110,7 @@ const organizations = defineCollection({
           // What this is. A program is time-boxed and structured (a cohort you move through); a pitch competition is pitching for money.
           format: z.enum(['grant-round', 'pitch-competition', 'program-cohort', 'challenge']).optional(),
           criteria: criteria.optional(), // rules for this competition or cohort, when they differ from the organization's
+          speakers: z.array(z.string()).default([]), // session leaders, speakers or judges, as the program named them (name and role). Names only, no pages.
           participants: z.array(z.string()).default([]), // everyone the program named as taking part, as written in its announcement. Names only; records carry the details.
           opens: z.coerce.date().optional(),
           closes: z.coerce.date().optional(),

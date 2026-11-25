@@ -21,5 +21,13 @@ rounds:
     announced: 2026-11-10
     announcement_url: https://www.linkedin.com/posts/blacktechsaturdays-leadershipdevelopment-ugcPost-7525923684369424385-Hppm/
     awards: The first BTS Leadership Cohort, a leadership development program for BTS's people, opening with a half day of sessions on soft skills and strategy
-    note: "Applications opened in March 2026; applicants were evaluated and selected, and the cohort began November 10. BTS has not published the cohort roster. Session leaders on opening day included LaTresha (LC) Howland, Jerome Crawford, G. Ponsella Hardaway, Andre Ebron, Justin Onwenu, Christina Ware and Johnnie Turnage."
+    note: "Applications opened in March 2026; applicants were evaluated and selected, and the cohort began November 10. BTS has not published the cohort roster yet."
+    speakers:
+      - LaTresha (LC) Howland, co-founder of Breadless
+      - Jerome Crawford, attorney with Detroit Legal Group and past president of the Wolverine Bar Association
+      - G. Ponsella Hardaway, executive director of MOSES
+      - Andre Ebron, founder and CEO of Ebron & Associates
+      - Justin Onwenu, Michigan State Senator-elect for District 1 and the City of Detroit's first Director of Entrepreneurship and Economic Opportunity
+      - Christina Ware, founder and Chief Ecosystem Architect of GapBridge Strategies
+      - Johnnie Turnage, co-founder of Black Tech Saturdays
 ---

@@ -50,6 +50,13 @@ const jsonld = {
         {!rd.criteria && o.data.criteria && <><dt>Eligibility</dt><dd><a href={`/org/${o.id}/#criteria`}>Rules on file for {o.data.name}</a></dd></>}
       </dl>
       {rd.note && <p class="crit-note">{rd.note}</p>}
+      {rd.speakers.length > 0 && (
+        <div class="roster">
+          <h2 class="sec">Session leaders</h2>
+          <p class="fine">As named by {o.data.name}.</p>
+          <ul>{rd.speakers.map((n) => <li>{n}</li>)}</ul>
+        </div>
+      )}
       {rd.participants.length > 0 && (
         <div class="roster">
           <h2 class="sec">Who took part</h2>
