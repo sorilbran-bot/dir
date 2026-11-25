@@ -56,7 +56,7 @@ const jsonld = {
           <p class="fine">As named by {o.data.name}. Businesses with a record link to it.</p>
           <ul>
             {rd.participants.map((n) => {
-              const hit = list.flatMap((r) => r.businesses).find((b) => b.data.name.toLowerCase().replace(/[^a-z0-9]/g, '') === n.toLowerCase().replace(/[^a-z0-9]/g, ''));
+              const hit = list.flatMap((r) => r.businesses).find((b) => b.data.name.toLowerCase().replace(/[^a-z0-9]/g, '') === n.replace(/\s*\([^)]*\)\s*$/, '').toLowerCase().replace(/[^a-z0-9]/g, ''));
               return <li>{hit ? <a href={`/business/${hit.id}/`}>{n}</a> : n}</li>;
             })}
           </ul>
