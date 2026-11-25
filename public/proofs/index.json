@@ -369,38 +369,46 @@
   ],
   "DIR-2026-0014": [
     {
+      "anchored_checked": "2026-11-25T17:22:44Z",
+      "bitcoin_block": 977532,
       "file": "/proofs/DIR-2026-0014/533d6b1f2c7a.md",
       "proof": "/proofs/DIR-2026-0014/533d6b1f2c7a.md.ots",
       "sha256": "533d6b1f2c7afc9796f7cd431926beeee094eac5d106b854b9147c78bd27b6b9",
       "stamped": "2026-11-25T15:28:19Z",
-      "status": "pending"
+      "status": "anchored"
     }
   ],
   "DIR-2026-0015": [
     {
+      "anchored_checked": "2026-11-25T17:22:45Z",
+      "bitcoin_block": 977532,
       "file": "/proofs/DIR-2026-0015/3d31d257549a.md",
       "proof": "/proofs/DIR-2026-0015/3d31d257549a.md.ots",
       "sha256": "3d31d257549a8532d94d28035628bc662fe03443a95e7ab703c7443985644bc6",
       "stamped": "2026-11-25T15:28:25Z",
-      "status": "pending"
+      "status": "anchored"
     }
   ],
   "DIR-2026-0016": [
     {
+      "anchored_checked": "2026-11-25T17:22:47Z",
+      "bitcoin_block": 977532,
       "file": "/proofs/DIR-2026-0016/d2003f78d07c.md",
       "proof": "/proofs/DIR-2026-0016/d2003f78d07c.md.ots",
       "sha256": "d2003f78d07c361acec3f8f8c0c3457393370eaed216801604f2fbaa06ac74f4",
       "stamped": "2026-11-25T15:28:29Z",
-      "status": "pending"
+      "status": "anchored"
     }
   ],
   "DIR-2026-0017": [
     {
+      "anchored_checked": "2026-11-25T17:22:48Z",
+      "bitcoin_block": 977532,
       "file": "/proofs/DIR-2026-0017/741f2f4bd3c0.md",
       "proof": "/proofs/DIR-2026-0017/741f2f4bd3c0.md.ots",
       "sha256": "741f2f4bd3c03694c9baaad47fccb6c902e89a72a91ad64ac550d1655a8bbe04",
       "stamped": "2026-11-25T15:28:34Z",
-      "status": "pending"
+      "status": "anchored"
     }
   ],
   "DIR-2026-0018": [
@@ -416,11 +424,13 @@
   ],
   "DIR-2026-0019": [
     {
+      "anchored_checked": "2026-11-25T17:22:51Z",
+      "bitcoin_block": 977532,
       "file": "/proofs/DIR-2026-0019/dd788b5fee2a.md",
       "proof": "/proofs/DIR-2026-0019/dd788b5fee2a.md.ots",
       "sha256": "dd788b5fee2aaa55d72a4010cf0bed60cc33cac674e7a10db782eb03410d2aad",
       "stamped": "2026-11-25T15:28:39Z",
-      "status": "pending"
+      "status": "anchored"
     }
   ],
   "DIR-2026-0020": [
