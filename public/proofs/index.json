@@ -446,20 +446,24 @@
   ],
   "DIR-2026-0021": [
     {
+      "anchored_checked": "2026-11-26T01:49:04Z",
+      "bitcoin_block": 977549,
       "file": "/proofs/DIR-2026-0021/c26f8aa70154.md",
       "proof": "/proofs/DIR-2026-0021/c26f8aa70154.md.ots",
       "sha256": "c26f8aa701546f9e993d44f1e05f1f41f70194817ecc0f1b04ff4cee4c05d5fd",
       "stamped": "2026-11-25T16:14:24Z",
-      "status": "pending"
+      "status": "anchored"
     }
   ],
   "DIR-2026-0022": [
     {
+      "anchored_checked": "2026-11-26T01:49:06Z",
+      "bitcoin_block": 977549,
       "file": "/proofs/DIR-2026-0022/354f56ed2a66.md",
       "proof": "/proofs/DIR-2026-0022/354f56ed2a66.md.ots",
       "sha256": "354f56ed2a66aa418aa13eabe777871ec6eae3d5d043e802e96c1ab6a378997f",
       "stamped": "2026-11-25T16:14:26Z",
-      "status": "pending"
+      "status": "anchored"
     }
   ]
 }
